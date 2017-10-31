@@ -1,0 +1,20 @@
+{
+  "name": "rick-and-morty-db",
+  "version": "1.0.0",
+  "description": "Rick and Morty Database ",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mcastillo40/Rick-And-Morty-DB.git"
+  },
+  "author": "Matthew Castillo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mcastillo40/Rick-And-Morty-DB/issues"
+  },
+  "homepage": "https://github.com/mcastillo40/Rick-And-Morty-DB#readme"
+}
