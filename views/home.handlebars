@@ -1,6 +1,45 @@
-<h1>Results:</h1>
-<div id="characterTable">
-{{#each results}}
-<p id={{this.id}}>{{this.fname}} {{this.lname}}</p>
-{{/each}}
+<div id="characterTable" role="tablist">
+    {{#each ricks}}
+
+    <div class="card">
+        <div class="card-header" role="tab" id="heading{{rick_id}}">
+            <h5 class="mb-0">
+                <a data-toggle="collapse" href="#collapse{{rick_id}}" aria-expanded="true" aria-controls="collapse{{rick_id}}">
+                <p id={{rick_id}}>{{fname}} {{lname}}</p>
+                </a>
+            </h5>
+        </div>
+
+        <div id="collapse{{rick_id}}" class="collapse show" role="tabpanel" aria-labelledby="heading{{rick_id}}" data-parent="#accordion">
+            <div class="card-body">
+                <table id="displayRicks">
+                    <td> Level: </td>
+                    <td> {{level}} </td> 
+                    <td class="left_indent"> Dimension: </td> 
+                    <td> {{dimension}} </td> 
+                    <td class="left_indent"> Type: </td> 
+                    <td> {{type}} </td> 
+                    <td class="left_indent"> Mortys: </td> 
+                    <td>
+                        <select name="rick_morty"> 
+                            {{#each rick_catches}}
+                                <option value="{{rickID}}">{{fName}}</option>
+                            {{/each}}
+                        </select>  
+                    </td>
+                    <td class="left_indent"> <a href="#">Update</a> </td>
+                    <td class="left_indent"> <button onclick="#">Delete</button> </td>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {{/each}}
+
+    <select name="rick_morty"> 
+        {{#each rick_catches}}
+            <option value="{{rickID}}")>{{fName}}</option>
+        {{/each}}
+    </select>  
+  
 </div>
