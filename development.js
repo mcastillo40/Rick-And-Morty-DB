@@ -38,6 +38,17 @@ module.exports = function(){
         });
     }
 
+    function getMortys(res, mysql, context, complete){
+        mysql.pool.query("SELECT morty.morty_id, fname, lname, level, health, defense FROM morty", function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
+                res.end();
+            }
+            context.morty  = results;
+            complete();
+        });
+    }
+
     function getRicksMortys(res, mysql, context, complete){
         mysql.pool.query("SELECT rick.rick_id AS rickID, morty.fName, morty.lName FROM rick_mortys "
             + "INNER JOIN morty ON rick_mortys.m_id = morty.morty_id "
@@ -52,30 +63,78 @@ module.exports = function(){
         });
     }
 
-    /*Display all people. Requires web based javascript to delete users with AJAX*/
+    function getNextMaxID(res, mysql, context, complete){
+        mysql.pool.query("SELECT MAX(rick_id) + 1 AS maxID FROM rick",
+        function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
+                res.end();
+            }
+            context.lastID = results;
 
+            complete();
+        });
+    }
+
+    /* Display all Ricks. */
     router.get('/', function(req, res){
         var callbackCount = 0;
         var context = {};
         //context.jsscripts = ["deleteperson.js"];
         var mysql = req.app.get('mysql');
         getRicks(res, mysql, context, complete);
+        getMortys(res, mysql, context, complete);
         getUniverse(res, mysql, context, complete);
         getType(res, mysql, context, complete);
         getRicksMortys(res, mysql, context, complete);
+        getNextMaxID(res, mysql, context, complete);
         function complete(){
             // Increase callbackCount everytime function was called
             // Render page after everything was completed
             callbackCount++; 
 
-            if(callbackCount >= 4){
+            if(callbackCount >= 6){
 
-                console.log(context);
-
-                res.render('home', context);
+                res.render('people', context);
             }
 
         }
+    });
+
+    /* Adds a person, redirects to the people page after adding */
+    router.post('/', function(req, res){
+
+        var mysql = req.app.get('mysql');
+        var sql = "INSERT INTO rick (fName, lName, level, type, dimension) VALUES (?,?,?,?,?)";
+        var inserts = [req.body.fname, req.body.lname, req.body.level, req.body.type, req.body.dimension];
+        var otherGrab = [req.body.mortyfName];
+        sql = mysql.pool.query(sql,inserts,function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
+                res.end();
+            }else{
+
+                var newSql = "INSERT INTO rick_mortys (r_id, m_id) VALUES (?, ?)";
+                var newInserts = [req.body.rickID, req.body.morty];
+
+                // validate that the user wanted to add a morty
+                if (req.body.morty != 0) {  
+
+                    newSql = mysql.pool.query(newSql,newInserts,function(error, results, fields){
+                        if(error){
+                            res.write(JSON.stringify(error));
+                            res.end();
+                        }else{
+
+                            res.redirect('/people');
+                        }
+                    });
+
+                }
+                else
+                    res.redirect('/people');
+            }
+        });
     });
 
     return router;
