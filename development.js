@@ -2,7 +2,7 @@ module.exports = function(){
     var express = require('express');
     var router = express.Router();
 
-    // Obtains the information for the different dimensions that a Rick can live
+    // Obtains the information for the different dimensions that a Rick can be from
     function getUniverse(res, mysql, context, complete){
         mysql.pool.query("SELECT universe_id, name FROM universe", function(error, results, fields){
             if(error){
@@ -53,7 +53,7 @@ module.exports = function(){
         });
     }
 
-    // Obtains the attack type for a morty
+    // Obtains the different attack types for a morty
     function getAttackType(res, mysql, context, complete){
         mysql.pool.query("SELECT attack_id, ability, power FROM attack_type", function(error, results, fields){
             if(error){
@@ -80,7 +80,7 @@ module.exports = function(){
         });
     }
 
-    // Gets the id for the next Rick in the list
+    // Gets the id for the next Rick in the table
     function getNextMaxID(res, mysql, context, complete){
         mysql.pool.query("SELECT Auto_increment AS maxID FROM information_schema.tables WHERE table_name='rick'",
         function(error, results, fields){
@@ -94,7 +94,7 @@ module.exports = function(){
         });
     }
 
-    // Gets the id for the next Morty in the list
+    // Gets the id for the next Morty in the table
     function getMortyMaxID(res, mysql, context, complete){
         mysql.pool.query("SELECT Auto_increment AS maxMortyID FROM information_schema.tables WHERE table_name='morty'",
         function(error, results, fields){
@@ -108,7 +108,7 @@ module.exports = function(){
         });
     }
 
-    /* Display all Ricks. */
+    /* Send information from the database to the web app */
     router.get('/', function(req, res){
         var callbackCount = 0;
         var context = {};
@@ -135,7 +135,8 @@ module.exports = function(){
         }
     });
 
-    /* Adds a Rick, redirects to the home page after adding */
+    /* Adds a Rick with attributes as well as a morty if the user decides to add one to the rick,
+        then redirects to the home page after adding */
     router.post('/', function(req, res){
 
         // Get Rick's basic information first
@@ -144,12 +145,12 @@ module.exports = function(){
         let inserts = [req.body.fname, req.body.lname, req.body.level, req.body.type, req.body.dimension];
 
         sql = mysql.pool.query(sql,inserts,function(error, results, fields){
-            if(error){
+            if(error){ 
                 res.write(JSON.stringify(error));
                 res.end();
             }else{
 
-                // Get the information from select to validate whether the user
+                // Get the information from select Morty to validate whether the user
                 // wanted to add a morty
                 let newSql = "INSERT INTO rick_mortys (r_id, m_id) VALUES (?, ?)";
                 let newInserts = [req.body.rickID, req.body.morty];
@@ -162,7 +163,6 @@ module.exports = function(){
                             res.write(JSON.stringify(error));
                             res.end();
                         }else{
-
                             res.redirect('/');
                         }
                     });
@@ -170,6 +170,7 @@ module.exports = function(){
                 }
                 else if (req.body.morty == 0) { // User requested to add a new Morty
                     
+                    // Get basic information for a morty 
                     let mortySql = "INSERT INTO morty (fName, lName, level, health, defense) VALUES (?,?,?,?,?)";
                     let mortyInserts = [req.body.mortyfName, req.body.mortylName, req.body.mortyLevel, req.body.mortyHealth, req.body.mortyDefense];
 
@@ -179,7 +180,8 @@ module.exports = function(){
                             res.end();
                         }
                         else {
-                            
+
+                            // Get the type of attack chosen for the morty
                             let attackSql = "INSERT INTO morty_attacks (m_id, a_id) VALUES (?, ?)";
                             let attackInserts = [req.body.mortyID, req.body.mortyAttack];
                             let firstMortyID = req.body.mortyID;
@@ -190,7 +192,8 @@ module.exports = function(){
                                     res.end();
                                 } 
                                 else {
-                                    
+
+                                    // Link the Rick and Morty 
                                     let newConnectionSql = "INSERT INTO rick_mortys (r_id, m_id) VALUES (?, ?)";
                                     let newConnectionInserts = [firstRickID, firstMortyID];
                                     
@@ -217,17 +220,3 @@ module.exports = function(){
     return router;
 }();
 
-
-/*
-let rick_Morty_ConnectionSql = "INSERT INTO rick_mortys (r_id, m_id) VALUES (?, ?)";
-let rick_Morty_Inserts = [req.body.rickID, req.body.mortyID];
-
-rick_Morty_Connection = mysql.pool.query(rick_Morty_ConnectionSql,rick_Morty_Inserts,function(error, results, fields){
-    if(error){
-        res.write(JSON.stringify(error));
-        res.end();
-    }else{
-        res.redirect('/');
-    }
-});
-*/
