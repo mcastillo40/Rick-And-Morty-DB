@@ -33,7 +33,7 @@
 
 h1 {
     color: white;
-    font-weight: bold;
+    font-weight: bolder;
     margin: 0 auto;
     text-align: center;
 }
@@ -54,6 +54,8 @@ form {
 #submitRick {
     width: 100%;
     height: 80px;
+    font-size: 200%;
+    font-weight: bolder;
 }
 
 #characterTable {

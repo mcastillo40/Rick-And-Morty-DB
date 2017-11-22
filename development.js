@@ -144,77 +144,82 @@ module.exports = function(){
         let sql = "INSERT INTO rick (fName, lName, level, type, dimension) VALUES (?,?,?,?,?)";
         let inserts = [req.body.fname, req.body.lname, req.body.level, req.body.type, req.body.dimension];
 
-        sql = mysql.pool.query(sql,inserts,function(error, results, fields){
-            if(error){ 
-                res.write(JSON.stringify(error));
-                res.end();
-            }else{
-
-                // Get the information from select Morty to validate whether the user
-                // wanted to add a morty
-                let newSql = "INSERT INTO rick_mortys (r_id, m_id) VALUES (?, ?)";
-                let newInserts = [req.body.rickID, req.body.morty];
-                let firstRickID = req.body.rickID;
-
-                if (req.body.morty != 0) { // User requested to add a pre-existing Morty
-
-                    newSql = mysql.pool.query(newSql,newInserts,function(error, results, fields){
-                        if(error){
-                            res.write(JSON.stringify(error));
-                            res.end();
-                        }else{
-                            res.redirect('/');
-                        }
-                    });
-
+        console.log(req.body.fname);
+        if (req.body.fname != "") {
+            sql = mysql.pool.query(sql,inserts,function(error, results, fields){
+                if(error){ 
+                    res.write(JSON.stringify(error));
+                    res.end();
                 }
-                else if (req.body.morty == 0) { // User requested to add a new Morty
-                    
-                    // Get basic information for a morty 
-                    let mortySql = "INSERT INTO morty (fName, lName, level, health, defense) VALUES (?,?,?,?,?)";
-                    let mortyInserts = [req.body.mortyfName, req.body.mortylName, req.body.mortyLevel, req.body.mortyHealth, req.body.mortyDefense];
+                else {
+                    // Get the information from select Morty to validate whether the user
+                    // wanted to add a morty
+                    let newSql = "INSERT INTO rick_mortys (r_id, m_id) VALUES (?, ?)";
+                    let newInserts = [req.body.rickID, req.body.morty];
+                    let firstRickID = req.body.rickID;
 
-                    mortySql = mysql.pool.query(mortySql,mortyInserts,function(error, results, fields){
-                        if(error){
-                            res.write(JSON.stringify(error));
-                            res.end();
-                        }
-                        else {
+                    if (req.body.morty != 0) { // User requested to add a pre-existing Morty
 
-                            // Get the type of attack chosen for the morty
-                            let attackSql = "INSERT INTO morty_attacks (m_id, a_id) VALUES (?, ?)";
-                            let attackInserts = [req.body.mortyID, req.body.mortyAttack];
-                            let firstMortyID = req.body.mortyID;
+                        newSql = mysql.pool.query(newSql,newInserts,function(error, results, fields){
+                            if(error){
+                                res.write(JSON.stringify(error));
+                                res.end();
+                            }else{
+                                res.redirect('/');
+                            }
+                        });
 
-                            attackSql = mysql.pool.query(attackSql,attackInserts,function(error, results, fields){
-                                if(error){
-                                    res.write(JSON.stringify(error));
-                                    res.end();
-                                } 
-                                else {
+                    }
+                    else if (req.body.morty == 0) { // User requested to add a new Morty
+                        
+                        // Get basic information for a morty 
+                        let mortySql = "INSERT INTO morty (fName, lName, level, health, defense) VALUES (?,?,?,?,?)";
+                        let mortyInserts = [req.body.mortyfName, req.body.mortylName, req.body.mortyLevel, req.body.mortyHealth, req.body.mortyDefense];
 
-                                    // Link the Rick and Morty 
-                                    let newConnectionSql = "INSERT INTO rick_mortys (r_id, m_id) VALUES (?, ?)";
-                                    let newConnectionInserts = [firstRickID, firstMortyID];
-                                    
-                                    newConnectionSql = mysql.pool.query(newConnectionSql,newConnectionInserts,function(error, results, fields){
-                                        if(error){
-                                            res.write(JSON.stringify(error));
-                                            res.end();
-                                        }
-                                        else {
-                                            res.redirect('/');
-                                        }
-                                    });
-                                }
-                            });   
-                        }
-                    });
+                        mortySql = mysql.pool.query(mortySql,mortyInserts,function(error, results, fields){
+                            if(error){
+                                res.write(JSON.stringify(error));
+                                res.end();
+                            }
+                            else {
+
+                                // Get the type of attack chosen for the morty
+                                let attackSql = "INSERT INTO morty_attacks (m_id, a_id) VALUES (?, ?)";
+                                let attackInserts = [req.body.mortyID, req.body.mortyAttack];
+                                let firstMortyID = req.body.mortyID;
+
+                                attackSql = mysql.pool.query(attackSql,attackInserts,function(error, results, fields){
+                                    if(error){
+                                        res.write(JSON.stringify(error));
+                                        res.end();
+                                    } 
+                                    else {
+
+                                        // Link the Rick and Morty 
+                                        let newConnectionSql = "INSERT INTO rick_mortys (r_id, m_id) VALUES (?, ?)";
+                                        let newConnectionInserts = [firstRickID, firstMortyID];
+                                        
+                                        newConnectionSql = mysql.pool.query(newConnectionSql,newConnectionInserts,function(error, results, fields){
+                                            if(error){
+                                                res.write(JSON.stringify(error));
+                                                res.end();
+                                            }
+                                            else {
+                                                res.redirect('/');
+                                            }
+                                        });
+                                    }
+                                });   
+                            }
+                        });
+                    }
+                    else // User requested not to add a Morty
+                        res.redirect('/');
                 }
-                else // User requested not to add a Morty
-                    res.redirect('/');
-            }
-        });
+            });
+        }
+        // Nothing happens if user entered an empty value
+        res.redirect('/');
     });
 
     return router;
