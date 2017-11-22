@@ -24,8 +24,6 @@
     overflow: visible;
   }
 
-  
-
 
 #navbarArea {
     height: 150px;
@@ -40,11 +38,9 @@ h1 {
     text-align: center;
 }
 
-
 form {
     margin-bottom: 50px;
 }
-
 
 .left_indent {
     padding-left: 10px;    
@@ -57,5 +53,9 @@ form {
 
 #submitRick {
     width: 100%;
-    height: 50px;
+    height: 80px;
+}
+
+#characterTable {
+    margin-bottom: 50px;
 }

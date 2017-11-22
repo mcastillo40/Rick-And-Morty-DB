@@ -1,19 +1,19 @@
 <h1>ADD A RICK</h1>
-<form id="addperson" action="/" method="post">
+<form id="addperson" action="/" method="post" novalidate>
     <div class="form-group" hidden="true">
-        <label for="RickID"></label>
+        <label for="rickID"></label>
         {{#each lastID}}
-            <input type="text" class="form-control" id="RickID" name="RickID" value="{{maxID}}">
+            <input type="number" class="form-control" id="rickID" name="rickID" value="{{maxID}}">
         {{/each}}
     </div>
 
     <div class="form-group">
-        <label for="fName">Name</label>
-        <input type="text" class="form-control" id="fName" name="fName" required>
+        <label for="fname">Name</label>
+        <input type="text" class="form-control" id="fname" name="fname">
     </div>
     <div class="form-group" hidden="true" >
-        <label for="lName"></label>
-        <input type="text" class="form-control" id="lName" name="lName" value="Rick">
+        <label for="lname"></label>
+        <input type="text" class="form-control" id="lname" name="lname" value="Rick">
     </div>
     <div class="form-group">
         <label for="level">Level</label>
@@ -40,17 +40,38 @@
 
     <div class="form-group">
         <label for="morty">Morty</label>
-        <select class="form-control" id="selectMortyOption" onchange="showfield(this.options[this.selectedIndex].value)" name="morty">
-            {{#each morty}}
-                <option value="{{morty_id}}">{{fname}} {{lname}}</option>
-            {{/each}}
-            <option value="Other">Other</option>
-        </select>
+        <div id="mortySelect">
+            <select class="form-control" id="selectMortyOption" onchange="showfield(this.options[this.selectedIndex].value)" name="morty">
+                {{#each morty}}
+                    <option value="{{morty_id}}">{{fname}} {{lname}}</option>
+                {{/each}}
+                <option value="0">Create Morty</option>
+            </select>
+        </div>
+    </div>
+    
+    <div id="mortyType" class="col-sm-8">
+        <div class="card" style="width: 20rem;">
+            <div class="card-header">
+                Featured
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">Cras justo odio</li>
+                <li class="list-group-item">Dapibus ac facilisis in</li>
+                <li class="list-group-item">Vestibulum at eros</li>
+            </ul>
+        </div>
     </div>
 
     <div id="mortyInfo" class="col-sm-8">
+        <div class="form-group" hidden="true">
+            <label for="mortyID"></label>
+            {{#each mortyLastID}}
+                <input type="number" class="form-control" id="mortyID" name="mortyID" value="{{maxMortyID}}">
+            {{/each}}
+        </div>
          <div class="form-group">
-            <label for="mortyfName">Morty Name</label>
+            <label for="mortyfName">Morty's Name</label>
             <input type="text" class="form-control" id="mortyfName" name="mortyfName" required>
         </div>
         <div class="form-group" hidden="true" >
@@ -74,11 +95,10 @@
             <label for="mortyAttack">Attack</label>
             <select class="form-control selectOption" id="mortyAttack" name="mortyAttack">
                 {{#each mAttack}}
-                    <option value="{{a_id}}">{{ability}}</option>
+                    <option value="{{attack_id}}">{{ability}}</option>
                 {{/each}}
             </select>
         </div>
-
     </div>
 
     <div class="form-group row">
@@ -129,6 +149,12 @@
  
 </div>
 
+<!--
+<select class="form-control selectOption" id="mortyAttack" name="mortyAttack">
+    {{#each mAttack}}
+        <option value="{{attack_id}}">{{ability}}</option>
+    {{/each}}
+</select> -->
 <!-- <select name="rick_morty"> 
         {{#each rick_catches}}
             <option value="{{rickID}}")>{{fName}}</option>
