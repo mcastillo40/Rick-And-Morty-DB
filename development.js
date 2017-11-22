@@ -82,7 +82,7 @@ module.exports = function(){
 
     // Gets the id for the next Rick in the list
     function getNextMaxID(res, mysql, context, complete){
-        mysql.pool.query("SELECT MAX(rick_id) + 1 AS maxID FROM rick",
+        mysql.pool.query("SELECT Auto_increment AS maxID FROM information_schema.tables WHERE table_name='rick'",
         function(error, results, fields){
             if(error){
                 res.write(JSON.stringify(error));
@@ -96,7 +96,7 @@ module.exports = function(){
 
     // Gets the id for the next Morty in the list
     function getMortyMaxID(res, mysql, context, complete){
-        mysql.pool.query("SELECT MAX(morty_id) + 1 AS maxMortyID FROM morty",
+        mysql.pool.query("SELECT Auto_increment AS maxMortyID FROM information_schema.tables WHERE table_name='morty'",
         function(error, results, fields){
             if(error){
                 res.write(JSON.stringify(error));
