@@ -38,12 +38,23 @@ h1 {
     text-align: center;
 }
 
+h2 {
+    font-weight: bolder;
+    margin: 0 auto;
+    text-align: center;
+}
+
 form {
+    margin: 0 auto;
     margin-bottom: 50px;
 }
 
 .left_indent {
     padding-left: 10px;    
+}
+
+h4 {
+    text-align: center !important;
 }
 
 #submitArea {
@@ -59,6 +70,7 @@ form {
 }
 
 #characterTable {
+    margin: 0 auto;
     margin-bottom: 50px;
 }
 
@@ -77,4 +89,8 @@ a:hover {
     text-decoration: none;
     font-weight: bold;
     color: gray;
+}
+
+table td {
+    border-bottom: 1px solid white;
 }

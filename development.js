@@ -108,6 +108,42 @@ module.exports = function(){
         });
     }
 
+    // Send the information of the different morty's
+    router.get('/mortyInfo', function(req, res){
+        var callbackCount = 0;
+        var context = {};
+        var mysql = req.app.get('mysql');
+        getMortys(res, mysql, context, complete);
+        function complete(){
+            // Increase callbackCount everytime function was called
+            // Render page after everything was completed
+            callbackCount++; 
+
+            if(callbackCount >= 1){
+                //console.log(context)
+                res.send(context);
+            }
+        }
+    });
+
+    // Send the different attacks that a morty has
+    router.get('/mortyAttacks', function(req, res, next){
+
+        var mysql = req.app.get('mysql');
+        mysql.pool.query("SELECT A.ability, A.power FROM attack_type A "
+            + " INNER JOIN morty_attacks MA ON MA.a_id = A.attack_id "
+            + " INNER JOIN morty M ON M.morty_id = MA.m_id "
+            + "WHERE M.morty_id = ?", 
+            [req.query.id], function(err, result){
+            if(err){
+                next(err);
+                return;
+            }  
+            // Sends the ability and power of the attack for a morty
+            res.send(result);
+        });
+    });
+
     /* Send information from the database to the web app */
     router.get('/', function(req, res){
         var callbackCount = 0;
@@ -144,7 +180,6 @@ module.exports = function(){
         let sql = "INSERT INTO rick (fName, lName, level, type, dimension) VALUES (?,?,?,?,?)";
         let inserts = [req.body.fname, req.body.lname, req.body.level, req.body.type, req.body.dimension];
 
-        console.log(req.body.fname);
         if (req.body.fname != "") {
             sql = mysql.pool.query(sql,inserts,function(error, results, fields){
                 if(error){ 

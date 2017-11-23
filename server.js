@@ -16,10 +16,6 @@ app.use(express.static(__dirname + '/public'));
 
 app.use('/', require('./development.js'));
 
-//app.get('/',function(req,res,next){ 
-//    res.render('home');
-//}); 
-
 app.use(function(req,res){
     res.status(404);
     res.render('404');
@@ -34,3 +30,8 @@ app.use(function(err, req, res, next){
 app.listen(app.get('port'), function(){
     console.log('Express started on http://localhost:' + app.get('port') + '; press Ctrl-C to terminate.');
 });
+
+
+//form#login(method='POST' action='voter/ballot')
+//button#submitLogin(type='submit' value="Submit") Submit
+// onclick="login()"
