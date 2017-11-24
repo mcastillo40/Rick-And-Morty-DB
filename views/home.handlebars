@@ -38,6 +38,7 @@
         </select>
     </div>
 
+    <!-- A select option of the different morty's a user can choose or they can select to create their own -->
     <div class="form-group">
         <label for="morty">Morty</label>
         <div id="mortySelect">
@@ -50,10 +51,10 @@
         </div>
     </div>
     
-    <div id="mortyType" class="col-sm-8">
-        
-    </div>
+    <!-- Will display information of a pre-existing morty -->
+    <div id="mortyType" class="col-sm-8">   </div>
 
+    <!-- Will display the fields to enter a new morty -->
     <div id="mortyInfo" class="col-sm-8">
         <div class="form-group" hidden="true">
             <label for="mortyID"></label>
@@ -91,6 +92,7 @@
             </select>
         </div>
     </div>
+    
 
     <div class="form-group row">
         <div class="col-sm-12" id="submitArea">
@@ -107,7 +109,7 @@
         <div class="card-header Rick_Title" role="tab" id="heading{{rick_id}}">
             <h5 class="mb-0">
                 <a data-toggle="collapse" href="#collapse{{rick_id}}" aria-expanded="true" aria-controls="collapse{{rick_id}}">
-                <p id={{rick_id}}>{{fname}} {{lname}}</p>
+                <p id="name{{rick_id}}">{{fname}} {{lname}}</p>
                 </a>
             </h5>
         </div>
@@ -115,23 +117,28 @@
         <div id="collapse{{rick_id}}" class="collapse" role="tabpanel" aria-labelledby="heading{{rick_id}}" data-parent="#accordion">
             <div class="card-body">
                 <table id="displayRicks">
-                    <td> <strong> Level: </strong> </td>
-                    <td> {{level}} </td> 
-                    <td class="left_indent"> <strong>Dimension:</strong> </td> 
-                    <td> {{dimension}} </td> 
-                    <td class="left_indent"> <strong>Type:</strong> </td> 
-                    <td> {{type}} </td> 
-                    <td class="left_indent"> <strong>Mortys:</strong> </td> 
-                    <td>
-                        <select name="rick_morty"> 
-                            {{#each rick_catches}}
-                                <option value="{{rickID}}">{{fName}}</option>
-                            {{/each}}
-                        </select>  
-                    </td>
-                    <td class="left_indent"> <a href="#">Update</a> </td>
-                    <td class="left_indent"> <button type="button" class="btn btn-secondary" onclick="#">Delete</button> </td>
+                    <tr>
+                        <td> <strong> Level: </strong> </td>
+                        <td> {{level}} </td> 
+                        <td class="left_indent"> <strong>Dimension:</strong> </td> 
+                        <td> {{dimension}} </td> 
+                        <td class="left_indent"> <strong>Type:</strong> </td> 
+                        <td> {{type}} </td> 
+                        <td class="left_indent"> <strong>Mortys:</strong> </td> 
+                        <td >
+                            <select id="{{rick_id}}"  name="rick_morty" > 
+                                {{#each rick_catches}}
+                                    <option value="{{rickID}}">{{fName}}</option>
+                                {{/each}}
+                            </select>  
+                        </td>
+                        <td class="left_indent"> <a href="#">Update</a> </td>
+                        <td class="left_indent"> <button type="button" class="btn btn-secondary" onclick="#">Delete</button> </td>
+                    </tr>
                 </table>
+                <div id="{{rick_id}}">
+                    <p>Cowboy Morty</p>
+                </div>
             </div>
         </div>
     </div>
@@ -139,6 +146,12 @@
     {{/each}}
  
 </div>
+
+<select name="rick_morty"> 
+    {{#each rick_catches}}
+        <option value="{{rickID}}">{{fName}}</option>
+    {{/each}}
+</select>  
 
 <!--
 <select class="form-control selectOption" id="mortyAttack" name="mortyAttack">

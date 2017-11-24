@@ -69,7 +69,7 @@ module.exports = function(){
     function getRicksMortys(res, mysql, context, complete){
         mysql.pool.query("SELECT rick.rick_id AS rickID, morty.fName, morty.lName FROM rick_mortys "
             + "INNER JOIN morty ON rick_mortys.m_id = morty.morty_id "
-            + "INNER JOIN rick ON rick_mortys.r_id = rick.rick_id", 
+            + "INNER JOIN rick ON rick_mortys.r_id = rick.rick_id WHERE rick.rick_id = 2", 
         function(error, results, fields){
             if(error){
                 res.write(JSON.stringify(error));
@@ -79,6 +79,23 @@ module.exports = function(){
             complete();
         });
     }
+
+    // Send the different morty's for a Rick
+    router.get('/ricksMortys', function(req, res, next){
+        var mysql = req.app.get('mysql');
+        mysql.pool.query("SELECT rick.rick_id AS rickID, morty.fName, morty.lName FROM rick_mortys "
+            + "INNER JOIN morty ON rick_mortys.m_id = morty.morty_id "
+            + "INNER JOIN rick ON rick_mortys.r_id = rick.rick_id "
+            + "WHERE rick.rick_id = 1", 
+            [req.query.id], function(err, result){
+            if(err){
+                next(err);
+                return;
+            }  
+            // Sends the ability and power of the attack for a morty
+            res.send(result);
+        });
+    });
 
     // Gets the id for the next Rick in the table
     function getNextMaxID(res, mysql, context, complete){
@@ -120,15 +137,14 @@ module.exports = function(){
             callbackCount++; 
 
             if(callbackCount >= 1){
-                //console.log(context)
+                // Send the information of a morty
                 res.send(context);
             }
         }
     });
 
-    // Send the different attacks that a morty has
+    // Send the different attacks that a morty contains
     router.get('/mortyAttacks', function(req, res, next){
-
         var mysql = req.app.get('mysql');
         mysql.pool.query("SELECT A.ability, A.power FROM attack_type A "
             + " INNER JOIN morty_attacks MA ON MA.a_id = A.attack_id "
@@ -143,6 +159,7 @@ module.exports = function(){
             res.send(result);
         });
     });
+
 
     /* Send information from the database to the web app */
     router.get('/', function(req, res){
@@ -193,7 +210,7 @@ module.exports = function(){
                     let newInserts = [req.body.rickID, req.body.morty];
                     let firstRickID = req.body.rickID;
 
-                    if (req.body.morty != 0) { // User requested to add a pre-existing Morty
+                    if (req.body.morty > 0) { // User requested to add a pre-existing Morty
 
                         newSql = mysql.pool.query(newSql,newInserts,function(error, results, fields){
                             if(error){
@@ -203,7 +220,6 @@ module.exports = function(){
                                 res.redirect('/');
                             }
                         });
-
                     }
                     else if (req.body.morty == 0) { // User requested to add a new Morty
                         
@@ -233,7 +249,7 @@ module.exports = function(){
                                         // Link the Rick and Morty 
                                         let newConnectionSql = "INSERT INTO rick_mortys (r_id, m_id) VALUES (?, ?)";
                                         let newConnectionInserts = [firstRickID, firstMortyID];
-                                        
+
                                         newConnectionSql = mysql.pool.query(newConnectionSql,newConnectionInserts,function(error, results, fields){
                                             if(error){
                                                 res.write(JSON.stringify(error));
@@ -248,15 +264,15 @@ module.exports = function(){
                             }
                         });
                     }
-                    else // User requested not to add a Morty
+                    else { // User requested not to add a Morty 
                         res.redirect('/');
+                    }
                 }
             });
         }
-        // Nothing happens if user entered an empty value
-        res.redirect('/');
+        else // Nothing happens if user entered an empty value for a nameless Rick
+            res.redirect('/');
     });
 
     return router;
 }();
-

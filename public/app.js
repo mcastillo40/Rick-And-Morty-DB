@@ -16,16 +16,19 @@ function showfield(name){
         document.getElementById('mortyType').style.display="none";
     }
     else { // Display Morty Information
-        addInfo(name);
         document.getElementById('mortyType').style.display="block";
         document.getElementById('mortyInfo').style.display="none";
+        addMortyInfo(name);
     }
 }
 
 // Prepend the select option for a morty to a blank selection and set value to -1 
 $("#selectMortyOption").prepend("<option value='-1' selected='selected'></option>");
 
-function addInfo (select_id) {
+// Function that requests information from the morty table
+// Will loop through list to find the morty information to display to the user
+function addMortyInfo (select_id) {
+    let morty_id, morty_fName, morty_lName, morty_health, morty_level, morty_defense;
     var req = new XMLHttpRequest();
 
 	req.open('GET', "/mortyInfo", true);
@@ -35,7 +38,6 @@ function addInfo (select_id) {
             
 	    	let response = JSON.parse(req.responseText);
             let length = response.morty.length;
-            let morty_id, morty_fName, morty_lName, morty_health, morty_level, morty_defense;
              
             for (var i = 0; i < length; i++) {	
                 if (select_id == response.morty[i].morty_id) {
@@ -48,30 +50,39 @@ function addInfo (select_id) {
                 }
             }
 
-            // Open new request to obtain the different attacks that a morty has
-            var newReq = new XMLHttpRequest();   
-
-            newReq.open('Get', "mortyAttacks?id=" + morty_id, true);
-            newReq.addEventListener('load',function(){ if(newReq.status >= 200 && newReq.status < 400){
-                let attacks = JSON.parse(newReq.responseText);
-                
-                // Call function to create card that presents all of morty's info
-                displaySelectedMorty(morty_fName, morty_lName, morty_health, morty_level, morty_defense, attacks);
-                
-              }
-              else {
-                console.log("Error in network request: " + newReq.statusText);
-              }});
-    
-              newReq.send(null);
+            // Call function to obtain the attacks of the morty called
+            addAttackInfo(morty_id, morty_fName, morty_lName, morty_health, morty_level, morty_defense);
 
 	    }
 	    else {
 	    	console.log("Error in network request: " + req.statusText);
 	    }});
 
-	req.send(null);
+    req.send(null);
+    
 }
+
+// This function calls to receive the different attacks that a specific morty contains
+function addAttackInfo(morty_id, morty_fName, morty_lName, morty_health, morty_level, morty_defense) {
+    
+    // Open new request to obtain the different attacks that a morty contains
+    var newReq = new XMLHttpRequest();   
+    
+    newReq.open('Get', "mortyAttacks?id=" + morty_id, true);
+    newReq.addEventListener('load',function(){ if(newReq.status >= 200 && newReq.status < 400){
+        let attacks = JSON.parse(newReq.responseText);
+        
+        // Call function to create card that presents all of morty's info
+        displaySelectedMorty(morty_fName, morty_lName, morty_health, morty_level, morty_defense, attacks);
+    
+    }
+    else {
+        console.log("Error in network request: " + newReq.statusText);
+    }});
+
+    newReq.send(null);
+}
+
 
 // Display a card with the morty's data
 // Level, health, defense, attack, and their power
@@ -184,3 +195,8 @@ function displaySelectedMorty(fName, lName, health, level, defense, attacks){
     divContent.appendChild(newCard);
 }
 
+function displayMorty(){
+    let rickID = document.getElementById("displayMorty").value;
+    console.log(rickID);
+}
+//displayMorty();
