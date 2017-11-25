@@ -8,13 +8,16 @@
     -webkit-transition: 0.5s;
     transition: 0.5s;
   }
+
   .reveal-if-active label {
     display: block;
     margin: 0 0 3px 0;
   }
+
   .reveal-if-active input[type=text] {
     width: 100%;
   }
+
   input[type="radio"]:checked ~ .reveal-if-active, input[type="checkbox"]:checked ~ .reveal-if-active {
     opacity: 1;
     max-height: 100px;
@@ -23,7 +26,6 @@
             transform: scale(1);
     overflow: visible;
   }
-
 
 #navbarArea {
     height: 150px;
@@ -44,6 +46,10 @@ h2 {
     text-align: center;
 }
 
+small {
+    font-size: 60%;
+}
+
 form {
     margin: 0 auto;
     margin-bottom: 50px;
@@ -51,6 +57,10 @@ form {
 
 .left_indent {
     padding-left: 10px;    
+}
+
+.options {
+    text-align: center; 
 }
 
 h4 {

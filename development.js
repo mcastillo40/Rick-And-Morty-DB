@@ -83,18 +83,39 @@ module.exports = function(){
     // Send the different morty's for a Rick
     router.get('/ricksMortys', function(req, res, next){
         var mysql = req.app.get('mysql');
-        mysql.pool.query("SELECT rick.rick_id AS rickID, morty.fName, morty.lName FROM rick_mortys "
+        
+        mysql.pool.query("SELECT morty.morty_id, morty.fname, morty.lname, morty.level, morty.health, morty.defense FROM rick_mortys "
             + "INNER JOIN morty ON rick_mortys.m_id = morty.morty_id "
             + "INNER JOIN rick ON rick_mortys.r_id = rick.rick_id "
-            + "WHERE rick.rick_id = 1", 
+            + "WHERE rick.rick_id = ?", 
             [req.query.id], function(err, result){
             if(err){
                 next(err);
                 return;
             }  
+
             // Sends the ability and power of the attack for a morty
             res.send(result);
         });
+    });
+
+    // Send the information of the different morty's
+    router.get('/getRickInfo', function(req, res){
+        var callbackCount = 0;
+        var context = {};
+        var mysql = req.app.get('mysql');
+        getRicks(res, mysql, context, complete);
+        function complete(){
+            // Increase callbackCount everytime function was called
+            // Render page after everything was completed
+            callbackCount++; 
+
+            if(callbackCount >= 1){
+
+                // Send the information of Ricks
+                res.send(context);
+            }
+        }
     });
 
     // Gets the id for the next Rick in the table
@@ -165,7 +186,7 @@ module.exports = function(){
     router.get('/', function(req, res){
         var callbackCount = 0;
         var context = {};
-        //context.jsscripts = ["deleteperson.js"];
+        context.jsscripts = ["deleteRick.js"];
         var mysql = req.app.get('mysql');
         getRicks(res, mysql, context, complete);
         getMortys(res, mysql, context, complete);
@@ -274,5 +295,34 @@ module.exports = function(){
             res.redirect('/');
     });
 
+    // Route to delete a Rick, simply returns a 202 upon success. Ajax will handle this. 
+    // The function first deletes the connection between rick and mortys then
+    // will delete the rick that was requested to be removed by the user
+    router.delete('/:id', function(req, res){
+        var mysql = req.app.get('mysql');
+        var sql = "DELETE FROM rick_mortys WHERE rick_mortys.r_id = ?";
+        var inserts = [req.params.id];
+        sql = mysql.pool.query(sql, inserts, function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
+                res.status(400);
+                res.end();
+            }else{
+                var newSql = "DELETE FROM rick WHERE rick.rick_id = ?";
+                newSql = mysql.pool.query(newSql, inserts, function(error, results, fields){
+                    if(error){
+                        res.write(JSON.stringify(error));
+                        res.status(400);
+                        res.end();
+                    }else{
+                
+                        res.status(202).end();
+                    }
+                })
+            }
+        })
+    })
+
     return router;
 }();
+

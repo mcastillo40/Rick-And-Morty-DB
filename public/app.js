@@ -1,23 +1,23 @@
+document.addEventListener('DOMContentLoaded', getRick);
+
 // Sets the information to select a Morty from the form to hidden as default
-$(document).ready( 
+$(document).ready(
     function () {
-        document.getElementById('mortyInfo').style.display='none';
-        document.getElementById('mortyType').style.display="none";
-}); 
+        document.getElementById('mortyInfo').style.display = 'none';
+        document.getElementById('mortyType').style.display = "none";
+    });
 
-function showfield(name){
-
+// Will Display the appropriate information for a morty selection in the form
+function showfield(name) {
     if (name == '0') { // Display sections to input information for a new Morty
-        document.getElementById('mortyInfo').style.display="block";
-        document.getElementById('mortyType').style.display="none";
-    }
-    else if (name == '-1'){ // Don't display any information
-        document.getElementById('mortyInfo').style.display="none";
-        document.getElementById('mortyType').style.display="none";
-    }
-    else { // Display Morty Information
-        document.getElementById('mortyType').style.display="block";
-        document.getElementById('mortyInfo').style.display="none";
+        document.getElementById('mortyInfo').style.display = "block";
+        document.getElementById('mortyType').style.display = "none";
+    } else if (name == '-1') { // Don't display any information
+        document.getElementById('mortyInfo').style.display = "none";
+        document.getElementById('mortyType').style.display = "none";
+    } else { // Display Morty Information
+        document.getElementById('mortyType').style.display = "block";
+        document.getElementById('mortyInfo').style.display = "none";
         addMortyInfo(name);
     }
 }
@@ -27,19 +27,19 @@ $("#selectMortyOption").prepend("<option value='-1' selected='selected'></option
 
 // Function that requests information from the morty table
 // Will loop through list to find the morty information to display to the user
-function addMortyInfo (select_id) {
+function addMortyInfo(select_id) {
     let morty_id, morty_fName, morty_lName, morty_health, morty_level, morty_defense;
     var req = new XMLHttpRequest();
 
-	req.open('GET', "/mortyInfo", true);
+    req.open('GET', "/mortyInfo", true);
 
-	req.addEventListener('load',function(){ 
-		if(req.status >= 200 && req.status < 400){
-            
-	    	let response = JSON.parse(req.responseText);
+    req.addEventListener('load', function () {
+        if (req.status >= 200 && req.status < 400) {
+
+            let response = JSON.parse(req.responseText);
             let length = response.morty.length;
-             
-            for (var i = 0; i < length; i++) {	
+
+            for (var i = 0; i < length; i++) {
                 if (select_id == response.morty[i].morty_id) {
                     morty_id = response.morty[i].morty_id;
                     morty_fName = response.morty[i].fname;
@@ -53,150 +53,104 @@ function addMortyInfo (select_id) {
             // Call function to obtain the attacks of the morty called
             addAttackInfo(morty_id, morty_fName, morty_lName, morty_health, morty_level, morty_defense);
 
-	    }
-	    else {
-	    	console.log("Error in network request: " + req.statusText);
-	    }});
+        } else {
+            console.log("Error in network request: " + req.statusText);
+        }
+    });
 
     req.send(null);
-    
+
 }
 
 // This function calls to receive the different attacks that a specific morty contains
 function addAttackInfo(morty_id, morty_fName, morty_lName, morty_health, morty_level, morty_defense) {
-    
+
     // Open new request to obtain the different attacks that a morty contains
-    var newReq = new XMLHttpRequest();   
-    
+    var newReq = new XMLHttpRequest();
+
     newReq.open('Get', "mortyAttacks?id=" + morty_id, true);
-    newReq.addEventListener('load',function(){ if(newReq.status >= 200 && newReq.status < 400){
-        let attacks = JSON.parse(newReq.responseText);
-        
-        // Call function to create card that presents all of morty's info
-        displaySelectedMorty(morty_fName, morty_lName, morty_health, morty_level, morty_defense, attacks);
-    
-    }
-    else {
-        console.log("Error in network request: " + newReq.statusText);
-    }});
+    newReq.addEventListener('load', function () {
+        if (newReq.status >= 200 && newReq.status < 400) {
+            let attacks = JSON.parse(newReq.responseText);
+
+            // Call function to create card that presents all of morty's info
+            displaySelectedMorty(morty_fName, morty_lName, morty_health, morty_level, morty_defense, attacks);
+
+        } else {
+            console.log("Error in network request: " + newReq.statusText);
+        }
+    });
 
     newReq.send(null);
 }
 
 
-// Display a card with the morty's data
-// Level, health, defense, attack, and their power
-function displaySelectedMorty(fName, lName, health, level, defense, attacks){
-    divContent = document.getElementById("mortyType");
-
-    // If card already exists then delete it and replace it with an updated card
-    if (document.getElementById("morty_status"))
-        document.getElementById("morty_status").remove();
-
-    // Create Card div
-    let newCard = document.createElement("div");
-    newCard.setAttribute("class", "card");
-    newCard.setAttribute("id", "morty_status");
-    newCard.setAttribute("style", "width: 35rem;");
-
-    // Create card header div
-    let headerCard = document.createElement("div");
-    headerCard.setAttribute("class", "card-header");
-
-    // Create header of the Morty
-    let header = document.createElement("h4");
-    header.textContent = fName + " " + lName;
-
-    // Create Table
-    let table = document.createElement("table");
-    table.setAttribute("class", "table table-inverse");
-    let tableHead = document.createElement("thead");
-    let tableRow = document.createElement("tr");
-
-    // Create table header for level
-    let tableHeader2 = document.createElement("th");
-    tableHeader2.textContent = "Level";
-    tableRow.appendChild(tableHeader2);
-
-    // Create table header for Health
-    let tableHeader1 = document.createElement("th");
-    tableHeader1.textContent = "Health";
-    tableRow.appendChild(tableHeader1);
-
-    // Create table header for Defense
-    let tableHeader3 = document.createElement("th");
-    tableHeader3.textContent = "Defense";
-    tableRow.appendChild(tableHeader3);
-
-    // Create table header for Attack
-    let tableHeader4 = document.createElement("th");
-    tableHeader4.textContent = "Attack(s)";
-    tableRow.appendChild(tableHeader4);
-
-    // Create table header for Power
-    let tableHeader5 = document.createElement("th");
-    tableHeader5.textContent = "Power";
-    tableRow.appendChild(tableHeader5);
-
-    // Link table header to table
-    tableHead.appendChild(tableRow);
-    table.appendChild(tableHead);
-
-    // create table body to display data
-    let tableBody = document.createElement("tbody");
-
-    let newTableRow = document.createElement("tr");
-    let tableData = document.createElement("td");
-    tableData.textContent = level;
-    newTableRow.appendChild(tableData);
-
-    tableData = document.createElement("td");
-    tableData.textContent = health;
-    newTableRow.appendChild(tableData);
-
-    tableData = document.createElement("td");
-    tableData.textContent = defense;
-    newTableRow.appendChild(tableData);
-
-    tableData = document.createElement("td");
-    tableData.textContent = attacks[0].ability;
-    newTableRow.appendChild(tableData);
-
-    tableData = document.createElement("td");
-    tableData.textContent = attacks[0].power;
-    newTableRow.appendChild(tableData);
-
-    table.appendChild(newTableRow);
-
-    // Add any additional attack and their power
-    let length = attacks.length; 
-    for (let i = 1; i < length; i++) {
-        newTableRow = document.createElement("tr");
-
-        tableData = document.createElement("td");
-        tableData.setAttribute("colspan", "3");
-        newTableRow.appendChild(tableData);
-
-        tableData = document.createElement("td");
-        tableData.textContent = attacks[i].ability;
-        newTableRow.appendChild(tableData);
-
-        tableData = document.createElement("td");
-        tableData.textContent = attacks[i].power;
-        newTableRow.appendChild(tableData);
-
-        table.appendChild(newTableRow);
-    }
-
-    // Link table into the card
-    headerCard.appendChild(header);
-    newCard.appendChild(headerCard);
-    newCard.appendChild(table);
-    divContent.appendChild(newCard);
-}
-
-function displayMorty(){
+function displayMorty() {
     let rickID = document.getElementById("displayMorty").value;
     console.log(rickID);
 }
-//displayMorty();
+
+
+function getRick() {
+
+    // Open new request to obtain the different attacks that a morty contains
+    var newReq = new XMLHttpRequest();
+
+    newReq.open('Get', "/getRickInfo", true);
+    newReq.addEventListener('load', function () {
+        if (newReq.status >= 200 && newReq.status < 400) {
+
+            let response = JSON.parse(newReq.responseText);
+
+            let length = response.ricks.length; // The number of Ricks in the database
+            let rickID;
+
+            for (let i = 0; i < length; i++) {
+                rickID = response.ricks[i].rick_id;
+                getRicksMortys(rickID);
+            }
+
+        } else {
+            console.log("Error in network request: " + newReq.statusText);
+        }
+    });
+
+    newReq.send(null);
+}
+
+// This function calls to receive the different morty's that a specific Rick contains
+function getRicksMortys(rickID){
+    let rickSection = document.getElementById(rickID);
+
+    var req = new XMLHttpRequest();
+    
+    req.open('GET', "/ricksMortys?id=" + rickID, true);
+
+    req.addEventListener('load', function () {
+        if (req.status >= 200 && req.status < 400) {
+
+            let response = JSON.parse(req.responseText);
+            let length = response.length; // The number of morty's the select Rick captured
+            let mortyID, fNmae, lName, lvl, health, def;
+
+            for (let i = 0; i < length; i++) {
+                mortyID = response[i].morty_id;
+                fNmae = response[i].fname;
+                lName = response[i].lname;
+                lvl = response[i].level;
+                health = response[i].health;
+                def = response[i].defense;
+                createMortyInfo(rickSection, mortyID, fNmae, lName, lvl, health, def);
+            }
+
+        } else {
+            console.log("Error in network request: " + req.statusText);
+        }
+    });
+
+    req.send(null);
+    
+}
+
+
+

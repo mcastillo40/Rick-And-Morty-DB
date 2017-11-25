@@ -8,7 +8,7 @@
     </div>
 
     <div class="form-group">
-        <label for="fname">Name</label>
+        <label for="fname">Name <small>(Appends Rick at the end of name)</small></label>
         <input type="text" class="form-control" id="fname" name="fname">
     </div>
     <div class="form-group" hidden="true" >
@@ -40,7 +40,7 @@
 
     <!-- A select option of the different morty's a user can choose or they can select to create their own -->
     <div class="form-group">
-        <label for="morty">Morty</label>
+        <label for="morty">Morty <small>(Appends Morty at the end of name)</small></label>
         <div id="mortySelect">
             <select class="form-control" id="selectMortyOption" onchange="showfield(this.options[this.selectedIndex].value)" name="morty">
                 {{#each morty}}
@@ -124,20 +124,14 @@
                         <td> {{dimension}} </td> 
                         <td class="left_indent"> <strong>Type:</strong> </td> 
                         <td> {{type}} </td> 
-                        <td class="left_indent"> <strong>Mortys:</strong> </td> 
-                        <td >
-                            <select id="{{rick_id}}"  name="rick_morty" > 
-                                {{#each rick_catches}}
-                                    <option value="{{rickID}}">{{fName}}</option>
-                                {{/each}}
-                            </select>  
-                        </td>
-                        <td class="left_indent"> <a href="#">Update</a> </td>
-                        <td class="left_indent"> <button type="button" class="btn btn-secondary" onclick="#">Delete</button> </td>
                     </tr>
                 </table>
                 <div id="{{rick_id}}">
-                    <p>Cowboy Morty</p>
+                    <strong>Mortys:</strong>
+                </div>
+                <div class="options">
+                    <span class="rightAlign"> <a href="#">Update</a> </span> &emsp;
+                    <span class="rightAlign"> <button type="button" class="btn btn-secondary" onclick="deleteRick({{rick_id}})">Delete</button> </span>
                 </div>
             </div>
         </div>
@@ -146,22 +140,4 @@
     {{/each}}
  
 </div>
-
-<select name="rick_morty"> 
-    {{#each rick_catches}}
-        <option value="{{rickID}}">{{fName}}</option>
-    {{/each}}
-</select>  
-
-<!--
-<select class="form-control selectOption" id="mortyAttack" name="mortyAttack">
-    {{#each mAttack}}
-        <option value="{{attack_id}}">{{ability}}</option>
-    {{/each}}
-</select> -->
-<!-- <select name="rick_morty"> 
-        {{#each rick_catches}}
-            <option value="{{rickID}}")>{{fName}}</option>
-        {{/each}}
-    </select>  -->
 
