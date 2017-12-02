@@ -80,6 +80,21 @@ module.exports = function(){
         });
     }
 
+    // Get a specific Rick
+    function getOneRick(res, mysql, context, id, complete){
+        var sql = "SELECT rick.rick_id, fName, lName, level, dimension, type" +
+        " FROM rick WHERE rick_id = ?";
+        var inserts = [id];
+        mysql.pool.query(sql, inserts, function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
+                res.end();
+            }
+            context.rick = results[0];
+            complete();
+        });
+    }
+
     // Send the different morty's for a Rick
     router.get('/ricksMortys', function(req, res, next){
         var mysql = req.app.get('mysql');
@@ -309,19 +324,92 @@ module.exports = function(){
                 res.end();
             }else{
                 var newSql = "DELETE FROM rick WHERE rick.rick_id = ?";
-                newSql = mysql.pool.query(newSql, inserts, function(error, results, fields){
+                newSql = mysql.pool.query(newSql, inserttype-selectors, function(error, results, fields){
                     if(error){
                         res.write(JSON.stringify(error));
                         res.status(400);
                         res.end();
                     }else{
-                
                         res.status(202).end();
                     }
                 })
             }
         })
     })
+
+    /* Display one person for the specific purpose of updating people */
+    router.get('/update/:id', function(req, res){
+        callbackCount = 0;
+        var context = {};
+        var mysql = req.app.get('mysql');
+        getOneRick(res, mysql, context, req.params.id, complete);
+        getUniverse(res, mysql, context, complete);
+        getType(res, mysql, context, complete);
+        getMortys(res, mysql, context, complete);
+        function complete(){
+            callbackCount++;
+            if(callbackCount >= 4){
+
+                res.render('update-Rick', context);
+            }
+
+        }
+    });
+
+    /* The URI that update data is sent to in order to update a person */
+    /*
+    router.put('/:id', function(req, res){
+        var mysql = req.app.get('mysql');
+        var sql = "UPDATE bsg_people SET fname=?, lname=?, homeworld=?, age=? WHERE id=?";
+        var inserts = [req.body.fname, req.body.lname, req.body.homeworld, req.body.age, req.params.id];
+        
+        sql = mysql.pool.query(sql,inserts,function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
+                res.end();
+            }else{
+                res.status(200);
+                res.end();
+            }
+        });
+    });
+    */
+
+    router.post('/updateRick',function(req,res){
+        
+        var mysql = req.app.get('mysql');
+        var sql = "UPDATE rick SET fName=?, level=?, type=?, dimension=? WHERE rick_id=?";
+        var inserts = [req.body.fname, req.body.level, req.body.type, req.body.dimension, req.body.rickID];
+        let newMortyCount, prevMortyCount; 
+
+        // Counts the different number of morty's from the previous to the new rick
+        if (req.body.newMorty)
+            newMortyCount = req.body.newMorty.length; 
+        else
+            newMortyCount = 0
+        
+        if (req.body.prevMorty)
+            prevMortyCount = req.body.prevMorty.length; 
+        else
+            prevMortyCount = 0
+
+        console.log("count: " + newMortyCount);
+        console.log("Pcount: " + prevMortyCount);
+
+        console.log(req.body);
+        
+        sql = mysql.pool.query(sql,inserts,function(error, results, fields){
+            if (error){
+                res.write(JSON.stringify(error));
+                res.end();
+            } else{
+                res.status(200);
+                res.redirect('/');
+                res.end();
+            }
+        });
+      
+    });
 
     return router;
 }();

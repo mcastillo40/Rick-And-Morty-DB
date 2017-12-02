@@ -1,5 +1,4 @@
 function deleteRick(id){
-    console.log("DELETE: " + id);
     $.ajax({
         url: '/' + id,
         type: 'DELETE',

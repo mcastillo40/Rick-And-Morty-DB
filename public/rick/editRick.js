@@ -85,12 +85,6 @@ function addAttackInfo(morty_id, morty_fName, morty_lName, morty_health, morty_l
 }
 
 
-function displayMorty() {
-    let rickID = document.getElementById("displayMorty").value;
-    console.log(rickID);
-}
-
-
 function getRick() {
 
     // Open new request to obtain the different attacks that a morty contains
@@ -152,5 +146,9 @@ function getRicksMortys(rickID){
     
 }
 
+
+function updateRick(rickID) {
+    window.location.href = "/update/" + rickID;
+}
 
 

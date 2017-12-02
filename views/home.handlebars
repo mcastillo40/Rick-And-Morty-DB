@@ -96,7 +96,7 @@
 
     <div class="form-group row">
         <div class="col-sm-12" id="submitArea">
-            <button id="submitRick" type="submit" class="btn btn-dark">Submit</button>
+            <button id="submitRick" type="submit" class="btn btn-dark submitButton">Submit</button>
         </div>
     </div>
 </form>
@@ -130,7 +130,7 @@
                     <strong>Mortys:</strong>
                 </div>
                 <div class="options">
-                    <span class="rightAlign"> <a href="#">Update</a> </span> &emsp;
+                    <span class="rightAlign"> <button type="button" class="btn btn-secondary" onclick="updateRick({{rick_id}})">Update</button> </span>&emsp;
                     <span class="rightAlign"> <button type="button" class="btn btn-secondary" onclick="deleteRick({{rick_id}})">Delete</button> </span>
                 </div>
             </div>
@@ -140,4 +140,8 @@
     {{/each}}
  
 </div>
+
+<script src="/static/rick/editRick.js"></script>
+<script src="/static/rick/deleteRick.js"></script>
+<script src="/static/rick/rickDOM.js"></script>
 

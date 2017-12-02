@@ -1,0 +1,70 @@
+<h2>Update {{rick.fName}} {{rick.lName}}</h2>
+<br>
+<form class="col-sm-8" id="updateRick" action="/updateRick" method="post">
+    <div class="form-group" hidden="true">
+        <input type="number" class="form-control" id="typeID" name="typeID" value="{{rick.type}}">
+        <input type="number" class="form-control" id="DimensionID" name="DimensionID" value="{{rick.dimension}}">
+        <input type="number" class="form-control" id="rickID" name="rickID" value="{{rick.rick_id}}">
+        {{#each morty}}
+            <div class="form-check">
+                <label class="form-check-label"> 
+                    <input class="form-check-input" type="checkbox" id="{{fname}}-{{morty_id}}" name="prevMorty" value="{{morty_id}}">
+                    {{fname}} {{lname}}
+                </label>
+            </div>
+        {{/each}}
+    </div>
+
+    <div class="form-group">
+        <label for="fname">First Name <small>(Appends Rick at the end of name)</small></label>
+        <input type="text" class="form-control" id="fname" name="fname" value="{{rick.fName}}">
+    </div>
+    <div class="form-group" hidden="true" >
+        <label for="lname"></label>
+        <input type="text" class="form-control" id="lname" name="lname" value="{{rick.lName}}">
+    </div>
+
+    <div class="form-group">
+        <label for="level">Level</label>
+        <input type="number" class="form-control" id="level" name="level" value="{{rick.level}}">
+    </div>
+
+    <div class="form-group">
+        <label for="dimension">Dimension</label>
+        <select class="form-control selectOption" id="dimension-selector" name="dimension">
+            {{#each dimension}}
+                <option value="{{universe_id}}">{{name}}</option>
+            {{/each}}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="type">Type</label>
+        <select class="form-control selectOption" id="type-selector" name="type">
+            {{#each type}}
+                <option value="{{rick_type_id}}">{{type}}</option>
+            {{/each}}
+        </select>
+    </div>
+
+    {{#each morty}}
+    <div class="form-check">
+            <label class="form-check-label"> 
+                <input class="form-check-input" type="checkbox" id="{{fname}}{{morty_id}}" name="newMorty" value="{{morty_id}}">
+                {{fname}} {{lname}}
+            </label>
+            <br>
+    </div>
+    {{/each}}
+
+    <div class="form-group row">
+        <div class="col-sm-12" id="submitArea">
+            <button id="updateRick" type="submit" class="btn btn-dark submitButton">Update</button>
+        </div>
+    </div>
+</form>
+
+<script src="/static/rick/updateRick.js" defer> 
+
+</script>
+
