@@ -76,7 +76,7 @@ module.exports = function(){
                 res.end();
             }
             context.rick_catches = results;
-            complete();
+            complete();updateRick
         });
     }
 
@@ -352,37 +352,59 @@ module.exports = function(){
 
                 res.render('update-Rick', context);
             }
-
         }
     });
 
-    /* The URI that update data is sent to in order to update a person */
-    /*
-    router.put('/:id', function(req, res){
-        var mysql = req.app.get('mysql');
-        var sql = "UPDATE bsg_people SET fname=?, lname=?, homeworld=?, age=? WHERE id=?";
-        var inserts = [req.body.fname, req.body.lname, req.body.homeworld, req.body.age, req.params.id];
-        
-        sql = mysql.pool.query(sql,inserts,function(error, results, fields){
+
+    // Delete a rick and morty connection
+    function deleteConnections(res, mysql, morty_id, rick_id, complete){
+        var sql = "DELETE FROM rick_mortys WHERE rick_mortys.m_id = ? AND rick_mortys.r_id = ?";
+        var inserts = [morty_id, rick_id];
+        mysql.pool.query(sql, inserts, function(error, results, fields){
             if(error){
                 res.write(JSON.stringify(error));
                 res.end();
-            }else{
-                res.status(200);
+            }
+            complete();
+        });
+    }
+
+    // Add a rick and morty connection
+    function addConnections (res, mysql, morty_id, rick_id, complete){
+        var sql = "INSERT INTO rick_mortys (r_id, m_id) VALUES (?, ?)";
+        var inserts = [rick_id, morty_id];
+        mysql.pool.query(sql, inserts, function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
                 res.end();
             }
+            complete();
         });
-    });
-    */
+    }
 
+    // Update Rick's attributes
+    function updateRick (res, mysql, fname, level, type, dimension, rickID, complete) {
+        var sql = "UPDATE rick SET fName=?, level=?, type=?, dimension=? WHERE rick_id=?";
+        let inserts = [fname, level, type, dimension, rickID];
+        mysql.pool.query(sql, inserts, function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
+                res.end();
+            }
+            complete();
+        });
+    }
+
+    // Update Rick accordingly
+    // Validate which Morty is being added or removed 
     router.post('/updateRick',function(req,res){
         
-        let inserts = [req.body.fname, req.body.level, req.body.type, req.body.dimension, req.body.rickID];
         let newMortyCount, prevMortyCount; 
         let callbackCount = 0;
-        let context = {};
+        let totalCalls = 0; 
+        let mysql = req.app.get('mysql');
     
-        // Counts the different number of morty's from the previous to the new rick
+        // Counts the different number of morty's from the previous to the updated rick
         if (req.body.newMorty)
             newMortyCount = req.body.newMorty.length; 
         else
@@ -392,42 +414,110 @@ module.exports = function(){
             prevMortyCount = req.body.prevMorty.length; 
         else
             prevMortyCount = 0;
-    
+        
+        // User selected to remove all mortys
         if (newMortyCount == 0 && prevMortyCount != 0) {
             for (let i = 0; i < prevMortyCount; i++){
-                //console.log(req.body.prevMorty[i] + " " + req.body.prevMorty[i].id);
-                var newSql = req.app.get('mysql');
-                var deleteSql = "DELETE FROM rick_mortys WHERE rick_mortys.m_id = ? AND rick_mortys.r_id = ?";
-                var deleteinserts = [req.body.prevMorty[i], req.body.rickID];
-                deleteSql = newSql.pool.query(deleteSql, deleteinserts, function(error, results, fields){
-                    if (error){
-                        res.write(JSON.stringify(error));
-                        res.end();
-                    } else{
-
-                    }
-                });
+                deleteConnections(res, mysql, req.body.prevMorty[i], req.body.rickID, complete);
+                totalCalls += 1; 
             }
         }
-        
-        console.log("count: " + newMortyCount);
-        console.log("Pcount: " + prevMortyCount);
-    
-        console.log(req.body);
+        // User added morty's to a rick that had no mortys
+        else if (prevMortyCount == 0 && newMortyCount >= 0) {
+            for (let i = 0; i < newMortyCount; i++){
+                addConnections (res, mysql, req.body.newMorty[i], req.body.rickID, complete);
+                totalCalls += 1; 
+            }
+        }
+        else if (prevMortyCount > newMortyCount) {
+            let addMorty = [true];
+
+            // Set all adds to true
+            for (let i = 1; i < newMortyCount; i++) {
+                addMorty.push(true);
+            }
+
+            // Delete previous morty if not found else keep it
+            // Also set addMorty to any new morty's being included 
+            for (i = 0; i < prevMortyCount; i++) {
+                let prevMortyFound = false;
+
+                for (let j = 0; j < newMortyCount; j++) {
+                    if (req.body.prevMorty[i] == req.body.newMorty[j]){
+                        prevMortyFound = true;
+                        addMorty[j] = false;
+                    }
+                }
+
+                // If previous morty was not included in the updated Rick then delete that morty
+                if (!prevMortyFound) {
+                    deleteConnections(res, mysql, req.body.prevMorty[i], req.body.rickID, complete);
+                    totalCalls += 1;
+                }
+            }
+
+            // Check which morty to add from the current update
+            for (i = 0; i < newMortyCount; i++) {
+                if (addMorty[i]) {
+                    addConnections (res, mysql, req.body.newMorty[i], req.body.rickID, complete);
+                    totalCalls += 1;
+                }
+            }    
+        }
+        else {
+            let deleteMorty = [true]; 
+
+            // Set all deletes to true
+            for (let i = 1; i < prevMortyCount; i++) {
+                deleteMorty.push(true);
+            }
+
+            // Delete previous morty if not found else keep it
+            // Also set addMorty to any new morty's being included 
+            for (i = 0; i < newMortyCount; i++) {
+                let newMortyFound = false;
+
+                for (let j = 0; j < prevMortyCount; j++) {
+                    if (req.body.newMorty[j] == req.body.prevMorty[i]){
+                        newMortyFound = true;
+                        deleteMorty[j] = false;
+                    }
+                }
+
+                // If previous morty was not included in the updated Rick then delete that morty
+                if (!newMortyFound) {
+                    addConnections (res, mysql, req.body.newMorty[i], req.body.rickID, complete);
+                    totalCalls += 1; 
+                }
+            }
+
+            // Check which morty to add from the current update
+            for (i = 0; i < prevMortyCount; i++) {
+                if (deleteMorty[i]) {
+                    deleteConnections(res, mysql, req.body.prevMorty[i], req.body.rickID, complete);
+                    totalCalls += 1; 
+                }
+            }    
+
+        }
         
         // Update the standard information for a Rick
-        let mysql = req.app.get('mysql');
-        let sql = "UPDATE rick SET fName=?, level=?, type=?, dimension=? WHERE rick_id=?";
-        sql = mysql.pool.query(sql,inserts,function(error, results, fields){
-            if (error){
-                res.write(JSON.stringify(error));
-                res.end();
-            } else{
+        updateRick(res, mysql, req.body.fname, req.body.level, req.body.type, req.body.dimension, req.body.rickID, complete);
+        totalCalls += 1; 
+
+        console.log("total: " + totalCalls);
+
+        function complete(){
+            callbackCount++;
+            console.log("Conplete: " + callbackCount);
+
+            if(callbackCount >= totalCalls){
+
                 res.status(200);
                 res.redirect('/');
                 res.end();
             }
-        });
+        }
       
     });
 
