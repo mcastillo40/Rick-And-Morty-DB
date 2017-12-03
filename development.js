@@ -324,7 +324,7 @@ module.exports = function(){
                 res.end();
             }else{
                 var newSql = "DELETE FROM rick WHERE rick.rick_id = ?";
-                newSql = mysql.pool.query(newSql, inserttype-selectors, function(error, results, fields){
+                newSql = mysql.pool.query(newSql, inserts, function(error, results, fields){
                     if(error){
                         res.write(JSON.stringify(error));
                         res.status(400);
