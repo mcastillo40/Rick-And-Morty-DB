@@ -16,7 +16,7 @@
     </div>
 
     <div class="form-group">
-        <label for="fname">First Name <small>(Appends Rick at the end of name)</small></label>
+        <label for="fname"><strong>First Name:</strong> <small>(Appends Rick at the end of name)</small></label>
         <input type="text" class="form-control" id="fname" name="fname" value="{{rick.fName}}">
     </div>
     <div class="form-group" hidden="true" >
@@ -25,12 +25,12 @@
     </div>
 
     <div class="form-group">
-        <label for="level">Level</label>
+        <label for="level"><strong>Level:</strong></label>
         <input type="number" class="form-control" id="level" name="level" value="{{rick.level}}">
     </div>
 
     <div class="form-group">
-        <label for="dimension">Dimension</label>
+        <label for="dimension"><strong>Dimension:</strong></label>
         <select class="form-control selectOption" id="dimension-selector" name="dimension">
             {{#each dimension}}
                 <option value="{{universe_id}}">{{name}}</option>
@@ -39,14 +39,14 @@
     </div>
 
     <div class="form-group">
-        <label for="type">Type</label>
+        <label for="type"><strong>Type:</strong></label>
         <select class="form-control selectOption" id="type-selector" name="type">
             {{#each type}}
                 <option value="{{rick_type_id}}">{{type}}</option>
             {{/each}}
         </select>
     </div>
-
+    <strong>Morty:</strong>
     {{#each morty}}
     <div class="form-check">
             <label class="form-check-label"> 

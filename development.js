@@ -377,27 +377,47 @@ module.exports = function(){
 
     router.post('/updateRick',function(req,res){
         
-        var mysql = req.app.get('mysql');
-        var sql = "UPDATE rick SET fName=?, level=?, type=?, dimension=? WHERE rick_id=?";
-        var inserts = [req.body.fname, req.body.level, req.body.type, req.body.dimension, req.body.rickID];
+        let inserts = [req.body.fname, req.body.level, req.body.type, req.body.dimension, req.body.rickID];
         let newMortyCount, prevMortyCount; 
-
+        let callbackCount = 0;
+        let context = {};
+    
         // Counts the different number of morty's from the previous to the new rick
         if (req.body.newMorty)
             newMortyCount = req.body.newMorty.length; 
         else
-            newMortyCount = 0
+            newMortyCount = 0;
         
         if (req.body.prevMorty)
             prevMortyCount = req.body.prevMorty.length; 
         else
-            prevMortyCount = 0
+            prevMortyCount = 0;
+    
+        if (newMortyCount == 0 && prevMortyCount != 0) {
+            for (let i = 0; i < prevMortyCount; i++){
+                //console.log(req.body.prevMorty[i] + " " + req.body.prevMorty[i].id);
+                var newSql = req.app.get('mysql');
+                var deleteSql = "DELETE FROM rick_mortys WHERE rick_mortys.m_id = ? AND rick_mortys.r_id = ?";
+                var deleteinserts = [req.body.prevMorty[i], req.body.rickID];
+                deleteSql = newSql.pool.query(deleteSql, deleteinserts, function(error, results, fields){
+                    if (error){
+                        res.write(JSON.stringify(error));
+                        res.end();
+                    } else{
 
+                    }
+                });
+            }
+        }
+        
         console.log("count: " + newMortyCount);
         console.log("Pcount: " + prevMortyCount);
-
+    
         console.log(req.body);
         
+        // Update the standard information for a Rick
+        let mysql = req.app.get('mysql');
+        let sql = "UPDATE rick SET fName=?, level=?, type=?, dimension=? WHERE rick_id=?";
         sql = mysql.pool.query(sql,inserts,function(error, results, fields){
             if (error){
                 res.write(JSON.stringify(error));
