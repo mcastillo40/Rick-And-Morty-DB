@@ -1,0 +1,23 @@
+<h2>Update {{ability.name}}</h2>
+<br>
+<form class="col-sm-8" id="updateUniverse" action="/updateThisAbility" method="post">
+    <div class="form-group" hidden="true">
+        <input type="number" class="form-control" id="id" name="id" value="{{ability.attack_id}}">
+    </div>
+
+    <div class="form-group">
+        <label for="name">Name</label> 
+        <input type="text" class="form-control" id="ability" name="ability" value="{{ability.ability}}" required>
+    </div>
+    <div class="form-group">
+        <label for="population">Power</label>
+        <input type="number" class="form-control" id="power" name="power" value="{{ability.power}}">
+    </div>
+
+
+    <div class="form-group row">
+        <div class="col-sm-12" id="submitArea">
+            <button id="submitAbility" type="submit" class="btn btn-dark submitButton">Submit</button>
+        </div>
+    </div>
+</form>

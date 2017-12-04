@@ -1,38 +1,30 @@
-document.addEventListener('DOMContentLoaded', updateFields);
 document.addEventListener('DOMContentLoaded', getMortys);
-
-// Ensures that the default selection is choosen
-function updateFields() {
-    let dimension = document.getElementById("DimensionID").value;
-    let type = document.getElementById("typeID").value;
-    
-    $("#type-selector").val(type);
-    $("#dimension-selector").val(dimension);
-}
 
 // Get which morty's the rick is linked to 
 function getMortys() {
-    let rickID = document.getElementById("rickID").value; 
+    let mortyID = document.getElementById("mortyID").value; 
 
     var req = new XMLHttpRequest();
 
-    req.open('GET', "/ricksMortys?id=" + rickID, true);
+    req.open('GET', "/mortyAttacks?id=" + mortyID, true);
 
     req.addEventListener('load', function () {
         if (req.status >= 200 && req.status < 400) {
 
             let response = JSON.parse(req.responseText);
             let length = response.length; // The number of morty's the select Rick captured
-            let checkBoxID, updateChecked, prevMortyCheckbox;
+            let currentCheckBoxID, updateChecked, prevCheckbox;
+
+            console.log(response);
 
             // Sets the morty's to checked in the update page for a rick
             for (let i = 0; i < length; i++) {
-                checkBoxID = response[i].fname + response[i].morty_id;
-                updateChecked = document.getElementById(checkBoxID);
+                currentCheckBoxID = response[i].ability + response[i].attack_id;
+                updateChecked = document.getElementById(currentCheckBoxID);
                 updateChecked.setAttribute("checked", "true");
 
-                prevMortyCheckbox = response[i].fname + "-" + response[i].morty_id;
-                updateChecked = document.getElementById(prevMortyCheckbox);
+                prevCheckbox = response[i].ability + "-" + response[i].attack_id;
+                updateChecked = document.getElementById(prevCheckbox);
                 updateChecked.setAttribute("checked", "true");
             }
 

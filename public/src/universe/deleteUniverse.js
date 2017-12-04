@@ -1,16 +1,16 @@
-function deleteMorty(id){
+function deleteUniverse(id){
 
-    let payload = {"morty_id" : id}
+    let payload = {"universe_id" : id}
 
     var req = new XMLHttpRequest();
-   
-    req.open('POST', "/deleteMorty?morty_id=" + id, true);
+    
+    req.open('POST', "/deleteUniverse?universe_id=" + id, true);
     req.setRequestHeader('Content-Type', 'application/json');
 
     req.addEventListener('load', function () {
         if (req.status >= 200 && req.status < 400) {
 
-            // Reload page after Morty is deleted
+            // Reload page after Universe is deleted
             window.location.reload(true);
             
         } else {
@@ -20,4 +20,4 @@ function deleteMorty(id){
     
     req.send(JSON.stringify(payload));
 };
-
+    

@@ -2,18 +2,9 @@ module.exports = function(){
     var express = require('express');
     var router = express.Router();
 
-    // Render Universe Page
-    router.get('/universe', function (req,res, next){   
-        res.render('universe', {
-            status: '200', 
-            status: 'ok', 
-            title: 'Universe', 
-          });
-    });
-
     // Obtains the information for the different dimensions that a Rick can be from
     function getUniverse(res, mysql, context, complete){
-        mysql.pool.query("SELECT universe_id, name FROM universe", function(error, results, fields){
+        mysql.pool.query("SELECT universe_id, name, population, species FROM universe", function(error, results, fields){
             if(error){
                 res.write(JSON.stringify(error));
                 res.end();
@@ -85,7 +76,7 @@ module.exports = function(){
                 res.end();
             }
             context.rick_catches = results;
-            complete();updateRick
+            complete();
         });
     }
 
@@ -100,6 +91,51 @@ module.exports = function(){
                 res.end();
             }
             context.rick = results[0];
+            complete();
+        });
+    }
+
+    // Get a specific Morty
+    function getOneMorty(res, mysql, context, id, complete){
+        var sql = "SELECT morty.morty_id, fName, lName, level, health, defense" +
+        " FROM morty WHERE morty_id = ?";
+        var inserts = [id];
+        mysql.pool.query(sql, inserts, function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
+                res.end();
+            }
+            context.morty = results[0];
+            complete();
+        });
+    }
+
+    // Get a specific Universe
+    function getOneUniverse(res, mysql, context, id, complete){
+        var sql = "SELECT universe.universe_id, name, population, species " +
+        " FROM universe WHERE universe_id = ?";
+        var inserts = [id];
+        mysql.pool.query(sql, inserts, function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
+                res.end();
+            }
+            context.universe = results[0];
+            complete();
+        });
+    }
+
+    // Get a specific Universe
+    function getOneAbility(res, mysql, context, id, complete){
+        var sql = "SELECT attack_type.attack_id, ability, power " +
+        " FROM attack_type WHERE attack_id = ?";
+        var inserts = [id];
+        mysql.pool.query(sql, inserts, function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
+                res.end();
+            }
+            context.ability = results[0];
             complete();
         });
     }
@@ -191,7 +227,7 @@ module.exports = function(){
     // Send the different attacks that a morty contains
     router.get('/mortyAttacks', function(req, res, next){
         var mysql = req.app.get('mysql');
-        mysql.pool.query("SELECT A.ability, A.power, M.morty_id FROM attack_type A "
+        mysql.pool.query("SELECT A.attack_id, A.ability, A.power, M.morty_id FROM attack_type A "
             + " INNER JOIN morty_attacks MA ON MA.a_id = A.attack_id "
             + " INNER JOIN morty M ON M.morty_id = MA.m_id "
             + "WHERE M.morty_id = ?", 
@@ -617,8 +653,394 @@ module.exports = function(){
                 })
             }
         })
+    });
+
+    /* Display one person for the specific purpose of updating people */
+    router.get('/updateMorty/:id', function(req, res){
+        callbackCount = 0;
+        var context = {};
+        var mysql = req.app.get('mysql');
+        getOneMorty(res, mysql, context, req.params.id, complete);
+        getAttackType(res, mysql, context, complete);
+        function complete(){
+            callbackCount++;
+            if(callbackCount >= 2){
+
+                res.render('update-Morty', context);
+            }
+        }
+    });
+
+    // Delete a morty and morty connection
+function deleteAttackConnections(res, mysql, attack_id, morty_id, complete){
+    var sql = "DELETE FROM morty_attacks WHERE morty_attacks.m_id = ? AND morty_attacks.a_id = ?";
+    var inserts = [morty_id, attack_id];
+    mysql.pool.query(sql, inserts, function(error, results, fields){
+        if(error){
+            res.write(JSON.stringify(error));
+            res.end();
+        }
+        complete();
+    });
+}
+
+// Add a morty and attack connection
+function addAttackConnection (res, mysql, attack_id, morty_id, complete){
+    var sql = "INSERT INTO morty_attacks (a_id, m_id) VALUES (?, ?)";
+    var inserts = [attack_id, morty_id];
+    mysql.pool.query(sql, inserts, function(error, results, fields){
+        if(error){
+            res.write(JSON.stringify(error));
+            res.end();
+        }
+        complete();
+    });
+}
+
+// Update Morty's attributes
+function updateMorty (res, mysql, fname, level, health, defense, mortyID, complete) {
+    var sql = "UPDATE morty SET fName=?, level=?, health=?, defense=? WHERE morty_id=?";
+    let inserts = [fname, level, health, defense, mortyID];
+    mysql.pool.query(sql, inserts, function(error, results, fields){
+        if(error){
+            res.write(JSON.stringify(error));
+            res.end();
+        }
+        complete();
+    });
+}
+
+// Update Morty accordingly
+// Validate which Attack is being added or removed 
+router.post('/updateMorty',function(req,res){
+    
+    let newAttackCount, prevAttackCount; 
+    let callbackCount = 0;
+    let totalCalls = 0; 
+    let mysql = req.app.get('mysql');
+
+    // Counts the different number of attack's from the previous to the updated morty
+    if (req.body.newAttack)
+        newAttackCount = req.body.newAttack.length; 
+    else
+        newAttackCount = 0;
+    
+    if (req.body.prevAttack)
+        prevAttackCount = req.body.prevAttack.length; 
+    else
+        prevAttackCount = 0;
+    
+    // User selected to remove all attacks
+    if (newAttackCount == 0 && prevAttackCount != 0) {
+        for (let i = 0; i < prevAttackCount; i++){
+            deleteAttackConnections(res, mysql, req.body.prevAttack[i], req.body.mortyID, complete);
+            totalCalls += 1; 
+        }
+    }
+    // User added attacks's to a morty that had no attacks
+    else if (prevAttackCount == 0 && newAttackCount >= 0) {
+        for (let i = 0; i < newAttackCount; i++){
+            addAttackConnection (res, mysql, req.body.newAttack[i], req.body.mortyID, complete);
+            totalCalls += 1; 
+        }
+    }
+    else if (prevAttackCount > newAttackCount) {
+        let addAttack = [true];
+
+        // Set all adds to true
+        for (let i = 1; i < newAttackCount; i++) {
+            addAttack.push(true);
+        }
+
+        // Delete previous attacks if not found else keep it
+        // Also set addAttack to any new morty's being included 
+        for (i = 0; i < prevAttackCount; i++) {
+            let prevAttackFound = false;
+
+            for (let j = 0; j < newAttackCount; j++) {
+                if (req.body.prevAttack[i] == req.body.newAttack[j]){
+                    prevAttack = true;
+                    addAttack[j] = false;
+                }
+            }
+
+            // If previous attack was not included in the updated Morty then delete that attack
+            if (!prevAttackFound) {
+                deleteAttackConnections(res, mysql, req.body.prevAttack[i], req.body.mortyID, complete);
+                totalCalls += 1;
+            }
+        }
+
+        // Check which attack to add from the current update
+        for (i = 0; i < newAttackCount; i++) {
+            if (addAttack[i]) {
+                addAttackConnection (res, mysql, req.body.newAttack[i], req.body.mortyID, complete);
+                totalCalls += 1;
+            }
+        }    
+    }
+    else {
+        let deleteAttack = [true]; 
+
+        // Set all deletes to true
+        for (let i = 1; i < prevAttackCount; i++) {
+            deleteAttack.push(true);
+        }
+
+        // Delete previous attack if not found else keep it
+        // Also set addAttack to any new attacks's being included 
+        for (i = 0; i < newAttackCount; i++) {
+            let newAttackFound = false;
+
+            for (let j = 0; j < prevAttackCount; j++) {
+                if (req.body.newAttack[j] == req.body.prevAttack[i]){
+                    newAttackFound = true;
+                    deleteAttack[j] = false;
+                }
+            }
+
+            // If previous attack was not included in the updated Morty then delete that attack
+            if (!newAttackFound) {
+                addAttackConnection (res, mysql, req.body.newAttack[i], req.body.mortyID, complete);
+                totalCalls += 1; 
+            }
+        }
+
+        // Check which attack to add from the current update
+        for (i = 0; i < prevAttackCount; i++) {
+            if (deleteAttack[i]) {
+                deleteAttackConnections(res, mysql, req.body.prevAttack[i], req.body.mortyID, complete);
+                totalCalls += 1; 
+            }
+        }    
+
+    }
+    
+    // Update the standard information for a Morty
+    updateMorty(res, mysql, req.body.fname, req.body.level, req.body.health, req.body.defense, req.body.mortyID, complete);
+    totalCalls += 1; 
+
+    console.log("total: " + totalCalls);
+
+    function complete(){
+        callbackCount++;
+        console.log("Complete: " + callbackCount);
+
+        if(callbackCount >= totalCalls){
+
+            res.status(200);
+            res.redirect('/morty');
+            res.end();
+        }
+    }
+  
+});
+
+    // Render Universe page
+    router.get('/universe', function(req, res){
+        var callbackCount = 0;
+        var context = {};
+        var mysql = req.app.get('mysql');
+        getUniverse(res, mysql, context, complete);
+
+        function complete(){
+            callbackCount++; 
+
+            if(callbackCount >= 1){
+
+                res.render('universe', context);
+            }
+
+        }
+    });
+
+    // Adds a new Universe
+    router.post('/addUniverse', function(req, res){
+        var mysql = req.app.get('mysql');
+        var sql = "INSERT INTO universe (name, population, species) VALUES (?,?,?)";
+        var inserts = [req.body.universeName, req.body.population, req.body.species];
+        
+        sql = mysql.pool.query(sql,inserts,function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
+                res.end();
+            }else{
+
+                res.redirect('/universe');
+
+            }
+        });
+    });
+
+    //Delete a universe
+    router.post('/deleteUniverse', function(req, res){
+        var mysql = req.app.get('mysql');
+        var sql = "DELETE FROM universe WHERE universe.universe_id = ?";
+        var inserts = [req.query.universe_id];
+        
+        sql = mysql.pool.query(sql, inserts, function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
+                res.status(400);
+                res.end();
+            }else{
+               
+                res.redirect('/universe');
+            }
+        })
+        
+    });
+
+    /* Display one person for the specific purpose of updating people */
+    router.get('/updateUniverse/:id', function(req, res){
+        callbackCount = 0;
+        var context = {};
+        var mysql = req.app.get('mysql');
+        getOneUniverse(res, mysql, context, req.params.id, complete);
+        function complete(){
+            callbackCount++;
+            if(callbackCount >= 1){
+
+                res.render('update-Universe', context);
+            }
+        }
+    });
+
+    // Update universe's attributes
+    function updateUniverse (res, mysql, name, populaton, species, u_id, complete) {
+        var sql = "UPDATE universe SET name=?, population=?, species=? WHERE universe_id=?";
+        let inserts = [name, populaton, species, u_id];
+        mysql.pool.query(sql, inserts, function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
+                res.end();
+            }
+            complete();
+        });
+    }
+
+    // Update universe's attributes
+    router.post('/updateThisUniverse', function(req, res){
+        var mysql = req.app.get('mysql');
+        let callbackCount = 0;
+
+        updateUniverse(res, mysql, req.body.name, req.body.population, req.body.species, req.body.id, complete);
+
+        function complete(){
+            callbackCount++;
+            if(callbackCount >= 1){
+
+                res.redirect('/universe');
+            }
+        }
+
+    });
+
+    // Render ability page
+    router.get('/abilities', function(req, res){
+        var callbackCount = 0;
+        var context = {};
+        var mysql = req.app.get('mysql');
+        getAttackType(res, mysql, context, complete);
+
+        function complete(){
+            callbackCount++; 
+
+            if(callbackCount >= 1){
+                res.render('abilities', context);
+            }
+
+        }
+    });
+
+    // Adds a new Ability for a morty
+    router.post('/addAbility', function(req, res){
+        var mysql = req.app.get('mysql');
+        var sql = "INSERT INTO attack_type (ability, power) VALUES (?,?)";
+        var inserts = [req.body.abilityName, req.body.power];
+        
+        sql = mysql.pool.query(sql,inserts,function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
+                res.end();
+            }else{
+
+                res.redirect('/abilities');
+
+            }
+        });
+    });
+
+    // Delete an attack type
+    // First delete it's connection with a morty type then delete the attack
+    router.post('/deleteAbility', function(req, res){
+        var mysql = req.app.get('mysql');
+
+        var sql = "DELETE FROM morty_attacks WHERE morty_attacks.a_id = ?";
+        var inserts = [req.query.attack_id];
+        sql = mysql.pool.query(sql, inserts, function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
+                res.status(400);
+                res.end();
+            }else{
+                var newSql = "DELETE FROM attack_type WHERE attack_type.attack_id = ?";
+                newSql = mysql.pool.query(newSql, inserts, function(error, results, fields){
+                    if(error){
+                        res.write(JSON.stringify(error));
+                        res.status(400);
+                        res.end();
+                    }else{
+                        res.status(202).end();
+                    }
+                })
+            }
+        })
     })
+
+    /* Display one person for the specific purpose of updating people */
+    router.get('/updateAbility/:id', function(req, res){
+        callbackCount = 0;
+        var context = {};
+        var mysql = req.app.get('mysql');
+        getOneAbility(res, mysql, context, req.params.id, complete);
+        function complete(){
+            callbackCount++;
+            if(callbackCount >= 1){
+
+                res.render('update-Ability', context);
+            }
+        }
+    });
+
+    // Update Attacks's attributes
+    function updateAbility (res, mysql, name, power, a_id,  complete) {
+        var sql = "UPDATE attack_type SET ability=?, power=? WHERE attack_id=?";
+        let inserts = [name, power, a_id];
+        mysql.pool.query(sql, inserts, function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
+                res.end();
+            }
+            complete();
+        });
+    }
+
+    router.post('/updateThisAbility', function(req, res){
+        var mysql = req.app.get('mysql');
+        let callbackCount = 0;
+
+        updateAbility(res, mysql, req.body.ability, req.body.power, req.body.id, complete);
+
+        function complete(){
+            callbackCount++;
+            if(callbackCount >= 1){
+
+                res.redirect('/abilities');
+            }
+        }
+
+    });
 
     return router;
 }();
-

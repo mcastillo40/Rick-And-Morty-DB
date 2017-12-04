@@ -1,0 +1,57 @@
+<h2>Update {{morty.fName}} {{morty.lName}}</h2>
+<br>
+<form class="col-sm-8" id="updateMorty" action="/updateMorty" method="post">
+    <div class="form-group" hidden="true">
+        <input type="number" class="form-control" id="mortyID" name="mortyID" value="{{morty.morty_id}}">
+        {{#each mAttack}}
+            <div class="form-check">
+                <label class="form-check-label"> 
+                    <input class="form-check-input" type="checkbox" id="{{ability}}-{{attack_id}}" name="prevAttack" value="{{attack_id}}">
+                </label>
+            </div>
+        {{/each}}
+    </div>
+
+    <div class="form-group">
+        <label for="fname"><strong>First Name:</strong> <small>(Appends Morty at the end of name)</small></label>
+        <input type="text" class="form-control" id="fname" name="fname" value="{{morty.fName}}" required>
+    </div>
+    <div class="form-group" hidden="true" >
+        <label for="lname"></label>
+        <input type="text" class="form-control" id="lname" name="lname" value="{{morty.lName}}">
+    </div>
+
+    <div class="form-group">
+        <label for="level"><strong>Level:</strong></label>
+        <input type="number" class="form-control" id="level" name="level" value="{{morty.level}}">
+    </div>
+
+    <div class="form-group">
+        <label for="health"><strong>Health:</strong></label>
+        <input type="number" class="form-control" id="health" name="health" value="{{morty.health}}">
+    </div>
+
+    <div class="form-group">
+        <label for="defense"><strong>Defense:</strong></label>
+        <input type="number" class="form-control" id="defense" name="defense" value="{{morty.defense}}">
+    </div>
+
+    <strong>Attacks:</strong>
+    {{#each mAttack}}
+    <div class="form-check">
+            <label class="form-check-label"> 
+                <input class="form-check-input" type="checkbox" id="{{ability}}{{attack_id}}" name="newAttack" value="{{attack_id}}">
+                {{ability}} 
+            </label>
+            <br>
+    </div>
+    {{/each}}
+
+    <div class="form-group row">
+        <div class="col-sm-12" id="submitArea">
+            <button id="updateRick" type="submit" class="btn btn-dark submitButton">Update</button>
+        </div>
+    </div>
+</form>
+
+<script src="/static/src/morty/updateMorty.js" defer></script>
