@@ -69,7 +69,7 @@ module.exports = function(){
     function getRicksMortys(res, mysql, context, complete){
         mysql.pool.query("SELECT rick.rick_id AS rickID, morty.fName, morty.lName FROM rick_mortys "
             + "INNER JOIN morty ON rick_mortys.m_id = morty.morty_id "
-            + "INNER JOIN rick ON rick_mortys.r_id = rick.rick_id WHERE rick.rick_id = 2", 
+            + "INNER JOIN rick ON rick_mortys.r_id = rick.rick_id", 
         function(error, results, fields){
             if(error){
                 res.write(JSON.stringify(error));
@@ -125,7 +125,7 @@ module.exports = function(){
         });
     }
 
-    // Get a specific Universe
+    // Get a specific Attack
     function getOneAbility(res, mysql, context, id, complete){
         var sql = "SELECT attack_type.attack_id, ability, power " +
         " FROM attack_type WHERE attack_id = ?";
@@ -1025,7 +1025,7 @@ router.post('/updateMorty',function(req,res){
             complete();
         });
     }
-
+    
     router.post('/updateThisAbility', function(req, res){
         var mysql = req.app.get('mysql');
         let callbackCount = 0;
