@@ -1,5 +1,5 @@
 <h2>Create A Rick</h2>
-<form class="col-sm-8" id="addperson" action="/" method="post" novalidate>
+<form class="col-sm-8" id="addRick" action="/" method="post" novalidate>
     <div class="form-group" hidden="true">
         <label for="rickID"></label>
         {{#each lastID}}
@@ -9,7 +9,7 @@
 
     <div class="form-group">
         <label for="fname">Name <small>(Appends Rick at the end of name)</small></label>
-        <input type="text" class="form-control" id="fname" name="fname">
+        <input type="text" class="form-control" id="fname" name="fname" required>
     </div>
     <div class="form-group" hidden="true" >
         <label for="lname"></label>
@@ -79,7 +79,7 @@
             <input type="number" class="form-control" id="mortyHealth" name="mortyHealth">
         </div>
         <div class="form-group">
-            <label for="mortyDefense">Morty's defense</label>
+            <label for="mortyDefense">Morty's Defense</label>
             <input type="number" class="form-control" id="mortyDefense" name="mortyDefense">
         </div>
 
@@ -141,7 +141,7 @@
  
 </div>
 
-<script src="/static/rick/editRick.js"></script>
-<script src="/static/rick/deleteRick.js"></script>
-<script src="/static/rick/rickDOM.js"></script>
+<script src="/static/src/rick/editRick.js"></script>
+<script src="/static/src/rick/deleteRick.js"></script>
+<script src="/static/src/rick/rickDOM.js"></script>
 

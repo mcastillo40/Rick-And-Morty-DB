@@ -2,6 +2,15 @@ module.exports = function(){
     var express = require('express');
     var router = express.Router();
 
+    // Render Universe Page
+    router.get('/universe', function (req,res, next){   
+        res.render('universe', {
+            status: '200', 
+            status: 'ok', 
+            title: 'Universe', 
+          });
+    });
+
     // Obtains the information for the different dimensions that a Rick can be from
     function getUniverse(res, mysql, context, complete){
         mysql.pool.query("SELECT universe_id, name FROM universe", function(error, results, fields){
@@ -182,7 +191,7 @@ module.exports = function(){
     // Send the different attacks that a morty contains
     router.get('/mortyAttacks', function(req, res, next){
         var mysql = req.app.get('mysql');
-        mysql.pool.query("SELECT A.ability, A.power FROM attack_type A "
+        mysql.pool.query("SELECT A.ability, A.power, M.morty_id FROM attack_type A "
             + " INNER JOIN morty_attacks MA ON MA.a_id = A.attack_id "
             + " INNER JOIN morty M ON M.morty_id = MA.m_id "
             + "WHERE M.morty_id = ?", 
@@ -217,7 +226,6 @@ module.exports = function(){
             callbackCount++; 
 
             if(callbackCount >= 8){
-
                 res.render('home', context);
             }
 
@@ -509,7 +517,7 @@ module.exports = function(){
 
         function complete(){
             callbackCount++;
-            console.log("Conplete: " + callbackCount);
+            console.log("Complete: " + callbackCount);
 
             if(callbackCount >= totalCalls){
 
@@ -520,6 +528,96 @@ module.exports = function(){
         }
       
     });
+
+    /* Send information from the database to the web app */
+    router.get('/morty', function(req, res){
+        var callbackCount = 0;
+        var context = {};
+        context.jsscripts = ["deleteRick.js"];
+        var mysql = req.app.get('mysql');
+        getMortys(res, mysql, context, complete);
+        getRicksMortys(res, mysql, context, complete);
+        getAttackType(res, mysql, context, complete);
+        getMortyMaxID(res, mysql, context, complete);
+        function complete(){
+            // Increase callbackCount everytime function was called
+            // Render page after everything was completed
+            callbackCount++; 
+
+            if(callbackCount >= 4){
+                res.render('morty', context);
+            }
+
+        }
+    });
+
+    // Adds a new Morty with their linked attack
+    router.post('/addMorty', function(req, res){
+        var mysql = req.app.get('mysql');
+        var sql = "INSERT INTO morty (fName, lName, level, health, defense) VALUES (?,?,?,?,?)";
+        var inserts = [req.body.mortyfName, req.body.mortylName, req.body.mortyLevel, req.body.mortyHealth, req.body.mortyDefense];
+        
+        sql = mysql.pool.query(sql,inserts,function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
+                res.end();
+            }else{
+                // Adds an attack for a morty
+                var newSql = "INSERT INTO morty_attacks (m_id, a_id) VALUES (?, ?)";
+                var newInserts = [req.body.mortyID, req.body.mortyAttack];
+
+                newSql = mysql.pool.query(newSql,newInserts,function(error, results, fields){
+                    if(error){
+                        res.write(JSON.stringify(error));
+                        res.end();
+                    }else{
+
+                        res.redirect('/morty');
+                    }
+                });
+            }
+        });
+    });
+
+    // Route to delete a Morty, simply returns a 202 upon success. Ajax will handle this. 
+    // The function first deletes the connection between mortys and attacks then
+    // will delete the morty that was requested to be removed by the user
+    router.post('/deleteMorty', function(req, res){
+        var mysql = req.app.get('mysql');
+        var sql = "DELETE FROM morty_attacks WHERE morty_attacks.m_id = ?";
+        var inserts = [req.query.morty_id];
+        
+        // First remove attacks linked with morty
+        sql = mysql.pool.query(sql, inserts, function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
+                res.status(400);
+                res.end();
+            }else{
+                // Remove lenks with ricks
+                var sql = "DELETE FROM rick_mortys WHERE rick_mortys.m_id = ?";
+                sql = mysql.pool.query(sql, inserts, function(error, results, fields){
+                    if(error){
+                        res.write(JSON.stringify(error));
+                        res.status(400);
+                        res.end();
+                    }else{  
+                        // Remove morty
+                        var newSql = "DELETE FROM morty WHERE morty.morty_id = ?";
+                        newSql = mysql.pool.query(newSql, inserts, function(error, results, fields){
+                            if(error){
+                                res.write(JSON.stringify(error));
+                                res.status(400);
+                                res.end();
+                            }else{
+                                res.redirect('/morty');
+                            }
+                        })
+                    }
+                })
+            }
+        })
+    })
 
     return router;
 }();

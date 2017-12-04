@@ -1,11 +1,17 @@
 document.addEventListener('DOMContentLoaded', getRick);
+document.addEventListener('DOMContentLoaded', setPage);
 
 // Sets the information to select a Morty from the form to hidden as default
 $(document).ready(
     function () {
         document.getElementById('mortyInfo').style.display = 'none';
         document.getElementById('mortyType').style.display = "none";
-    });
+});
+
+function setPage() {
+    let currentPage = document.getElementById('rickPage');
+    currentPage.setAttribute("class", "active");
+}
 
 // Will Display the appropriate information for a morty selection in the form
 function showfield(name) {
@@ -146,7 +152,7 @@ function getRicksMortys(rickID){
     
 }
 
-
+// Render Update page when user selects to update Rick
 function updateRick(rickID) {
     window.location.href = "/update/" + rickID;
 }

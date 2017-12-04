@@ -14,10 +14,6 @@ app.set('mysql', mysql);
 
 app.use('/', require('./development.js'));
 
-app.get('/universe', function (req,res, next){   
-    res.render('universe');
-});
-
 app.use(function(req,res){
     res.status(404);
     res.render('404');

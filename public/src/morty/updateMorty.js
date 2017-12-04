@@ -1,18 +1,6 @@
 document.addEventListener('DOMContentLoaded', updateFields);
 document.addEventListener('DOMContentLoaded', getMortys);
 
-/*function updatePerson(id){
-    $.ajax({
-        url: '/' + id,
-        type: 'PUT',
-        data: $('#update-person').serialize(),
-        success: function(result){
-            window.location.replace("./");
-        }
-    })
-};*/
-
-
 // Ensures that the default selection is choosen
 function updateFields() {
     let dimension = document.getElementById("DimensionID").value;
