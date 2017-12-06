@@ -6,7 +6,10 @@ The user will be introduced to a form that allows them to enter a Rick’s infor
 A morty’s last name will also not be able to be manipulated in order to distinguish which is a ‘morty’ character. A morty will be able to have different types of attacks which the user may manipulate. Same as Rick when creating a morty only 1 attack type may be chosen because he is just starting off. After created you may update him as you please.
 
 Database Outline:
-rick entity will have an id (Primary key),
+
+rick entity will have:
+	
+	id (Primary key),
 	first name: User will be able to manipulate (Must be entered)
 	last name: User cannot manipulate, always will be 'Rick' to show that it is a
 		Rick character	
@@ -14,31 +17,44 @@ rick entity will have an id (Primary key),
 	type: Will be a reference to type table; May only be of 1 type
 	dimension: Will be a reference to universe table; May only be of 1 type. 
 
-Universe will have an id (Primary key) a name, population, and species; This is a 	universe that a Rick can be from.
+Universe will have: 
+		
+	id (Primary key) 
+	name: Name of the universe
+	population: Number of people in the universe
+	species: Name of species
 
-rick_type will have an id (Primary key) and a type; Cannot be NULL for either 	attribute; This is a type that a Rick can be. There were only 2 types of 	ricks available for the user to use.
+rick_type will have: 
+		
+	id (Primary key)
+	type: Cannot be NULL for either attribute; This is a type that a Rick can be. 
+	There were only 2 types of ricks available for the user to select.
 
-morty entity will have an id (Primary key),
+morty entity will have:
+
+	id (Primary key),
 	first name: User will be able to manipulate (Must be entered)
-	last name: User cannot manipulate, always will be 'Morty' to show that it is 		a Morty character
+	last name: User cannot manipulate, always will be 'Morty' to show that it is a Morty character
 	level: Integer that user may manipulate can be NULL
 	health: Integer that user may manipulate can be NULL
 	defense: Integer that user may manipulate can be NULL
 
-attack_type type will have an id (Primary key)
+attack_type will have an id (Primary key)
+	
 	ability: Name of the attack that must be listed
 	power: Integer of the attack power, can be NULL
 
 Relationships:
-Ricks are from dimensions – they can only be from 1 dimension. This is a 1
-to many relationship
 
-Ricks are a certain type – they can only be 1 type. This is a 1 to many
-relationship.
+	Ricks are from dimensions – they can only be from 1 dimension. This is a 1
+	to many relationship
 
-Ricks can capture/use different Mortys – This is a many-to-many relationship
+	Ricks are a certain type – they can only be 1 type. This is a 1 to many
+	relationship.
+
+	Ricks can capture/use different Mortys – This is a many-to-many relationship
 	where a Rick can own many Mortys and a Morty can be owned by many Ricks.
 	
-Mortys have attacks – this is considered a many-to-many relationship.
+	Mortys have attacks – this is considered a many-to-many relationship.
 
-Morty’s can have multiple attacks and different Mortys can have the same type of attack.
+	Morty’s can have multiple attacks and different Mortys can have the same type of attack.
