@@ -32,9 +32,13 @@ attack_type type will have an id (Primary key)
 Relationships:
 Ricks are from dimensions – they can only be from 1 dimension. This is a 1
 to many relationship
+
 Ricks are a certain type – they can only be 1 type. This is a 1 to many
 relationship.
+
 Ricks can capture/use different Mortys – This is a many-to-many relationship
 	where a Rick can own many Mortys and a Morty can be owned by many Ricks.
+	
 Mortys have attacks – this is considered a many-to-many relationship.
+
 Morty’s can have multiple attacks and different Mortys can have the same type of attack.
