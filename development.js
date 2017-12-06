@@ -29,6 +29,22 @@ module.exports = function(){
     // Obtains the different Rick's in the database
     function getRicks(res, mysql, context, complete){
         mysql.pool.query("SELECT rick.rick_id, fname, lname, level, universe.name AS dimension, rick_type.type AS type "
+            + "FROM rick LEFT JOIN universe ON dimension = universe.universe_id " 
+            + "LEFT JOIN rick_type ON rick.type = rick_type.rick_type_id", 
+        function(error, results, fields){
+            if(error){
+                res.write(JSON.stringify(error));
+                res.end();
+            }
+            console.log(results);
+            context.ricks = results;
+            complete();
+        });
+    }
+
+    // Obtains the different Rick's in the database
+    function getRicksPlanet(res, mysql, context, complete){
+        mysql.pool.query("SELECT rick.rick_id, fname, lname, level, universe.name AS dimension, rick_type.type AS type "
             + "FROM rick INNER JOIN universe ON dimension = universe.universe_id " 
             + "INNER JOIN rick_type ON rick.type = rick_type.rick_type_id", 
         function(error, results, fields){
@@ -36,6 +52,7 @@ module.exports = function(){
                 res.write(JSON.stringify(error));
                 res.end();
             }
+            console.log(results);
             context.ricks = results;
             complete();
         });
