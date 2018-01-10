@@ -1,161 +1,8 @@
+
 module.exports = function(){
-    var express = require('express');
-    var router = express.Router();
-
-    // Obtains the information for the different dimensions that a Rick can be from
-    function getUniverse(res, mysql, context, complete){
-        mysql.pool.query("SELECT universe_id, name, population, species FROM universe", function(error, results, fields){
-            if(error){
-                res.write(JSON.stringify(error));
-                res.end();
-            }
-            context.dimension  = results;
-            complete();
-        });
-    }
-
-    // Obtains the Types of Ricks
-    function getType(res, mysql, context, complete){
-        mysql.pool.query("SELECT rick_type_id, type FROM rick_type", function(error, results, fields){
-            if(error){
-                res.write(JSON.stringify(error));
-                res.end();
-            }
-            context.type  = results;
-            complete();
-        });
-    }
-
-    // Obtains the different Rick's in the database
-    function getRicks(res, mysql, context, complete){
-        mysql.pool.query("SELECT rick.rick_id, fname, lname, level, universe.name AS dimension, rick_type.type AS type "
-            + "FROM rick LEFT JOIN universe ON dimension = universe.universe_id " 
-            + "LEFT JOIN rick_type ON rick.type = rick_type.rick_type_id", 
-        function(error, results, fields){
-            if(error){
-                res.write(JSON.stringify(error));
-                res.end();
-            }
-            console.log(results);
-            context.ricks = results;
-            complete();
-        });
-    }
-
-    // Obtains the different Rick's in the database
-    function getRicksPlanet(res, mysql, context, complete){
-        mysql.pool.query("SELECT rick.rick_id, fname, lname, level, universe.name AS dimension, rick_type.type AS type "
-            + "FROM rick INNER JOIN universe ON dimension = universe.universe_id " 
-            + "INNER JOIN rick_type ON rick.type = rick_type.rick_type_id", 
-        function(error, results, fields){
-            if(error){
-                res.write(JSON.stringify(error));
-                res.end();
-            }
-            console.log(results);
-            context.ricks = results;
-            complete();
-        });
-    }
-
-    // Obtains the different Morty's in the database
-    function getMortys(res, mysql, context, complete){
-        mysql.pool.query("SELECT morty.morty_id, fname, lname, level, health, defense FROM morty", function(error, results, fields){
-            if(error){
-                res.write(JSON.stringify(error));
-                res.end();
-            }
-            context.morty  = results;
-            complete();
-        });
-    }
-
-    // Obtains the different attack types for a morty
-    function getAttackType(res, mysql, context, complete){
-        mysql.pool.query("SELECT attack_id, ability, power FROM attack_type", function(error, results, fields){
-            if(error){
-                res.write(JSON.stringify(error));
-                res.end();
-            }
-            context.mAttack  = results;
-            complete();
-        });
-    }
-
-    // Obtains the morty's that each rick has in their possession
-    function getRicksMortys(res, mysql, context, complete){
-        mysql.pool.query("SELECT rick.rick_id AS rickID, morty.fName, morty.lName FROM rick_mortys "
-            + "INNER JOIN morty ON rick_mortys.m_id = morty.morty_id "
-            + "INNER JOIN rick ON rick_mortys.r_id = rick.rick_id", 
-        function(error, results, fields){
-            if(error){
-                res.write(JSON.stringify(error));
-                res.end();
-            }
-            context.rick_catches = results;
-            complete();
-        });
-    }
-
-    // Get a specific Rick
-    function getOneRick(res, mysql, context, id, complete){
-        var sql = "SELECT rick.rick_id, fName, lName, level, dimension, type" +
-        " FROM rick WHERE rick_id = ?";
-        var inserts = [id];
-        mysql.pool.query(sql, inserts, function(error, results, fields){
-            if(error){
-                res.write(JSON.stringify(error));
-                res.end();
-            }
-            context.rick = results[0];
-            complete();
-        });
-    }
-
-    // Get a specific Morty
-    function getOneMorty(res, mysql, context, id, complete){
-        var sql = "SELECT morty.morty_id, fName, lName, level, health, defense" +
-        " FROM morty WHERE morty_id = ?";
-        var inserts = [id];
-        mysql.pool.query(sql, inserts, function(error, results, fields){
-            if(error){
-                res.write(JSON.stringify(error));
-                res.end();
-            }
-            context.morty = results[0];
-            complete();
-        });
-    }
-
-    // Get a specific Universe
-    function getOneUniverse(res, mysql, context, id, complete){
-        var sql = "SELECT universe.universe_id, name, population, species " +
-        " FROM universe WHERE universe_id = ?";
-        var inserts = [id];
-        mysql.pool.query(sql, inserts, function(error, results, fields){
-            if(error){
-                res.write(JSON.stringify(error));
-                res.end();
-            }
-            context.universe = results[0];
-            complete();
-        });
-    }
-
-    // Get a specific Attack
-    function getOneAbility(res, mysql, context, id, complete){
-        var sql = "SELECT attack_type.attack_id, ability, power " +
-        " FROM attack_type WHERE attack_id = ?";
-        var inserts = [id];
-        mysql.pool.query(sql, inserts, function(error, results, fields){
-            if(error){
-                res.write(JSON.stringify(error));
-                res.end();
-            }
-            context.ability = results[0];
-            complete();
-        });
-    }
+    const express = require('express');
+    const getData = require('./public/database/getData.js');
+    const router = express.Router();
 
     // Send the different morty's for a Rick
     router.get('/ricksMortys', function(req, res, next){
@@ -181,7 +28,7 @@ module.exports = function(){
         var callbackCount = 0;
         var context = {};
         var mysql = req.app.get('mysql');
-        getRicks(res, mysql, context, complete);
+        getData.getRicks(res, mysql, context, complete);
         function complete(){
             // Increase callbackCount everytime function was called
             // Render page after everything was completed
@@ -195,40 +42,12 @@ module.exports = function(){
         }
     });
 
-    // Gets the id for the next Rick in the table
-    function getNextMaxID(res, mysql, context, complete){
-        mysql.pool.query("SELECT Auto_increment AS maxID FROM information_schema.tables WHERE table_name='rick'",
-        function(error, results, fields){
-            if(error){
-                res.write(JSON.stringify(error));
-                res.end();
-            }
-            context.lastID = results;
-
-            complete();
-        });
-    }
-
-    // Gets the id for the next Morty in the table
-    function getMortyMaxID(res, mysql, context, complete){
-        mysql.pool.query("SELECT Auto_increment AS maxMortyID FROM information_schema.tables WHERE table_name='morty'",
-        function(error, results, fields){
-            if(error){
-                res.write(JSON.stringify(error));
-                res.end();
-            }
-            context.mortyLastID = results;
-
-            complete();
-        });
-    }
-
     // Send the information of the different morty's
     router.get('/mortyInfo', function(req, res){
         var callbackCount = 0;
         var context = {};
         var mysql = req.app.get('mysql');
-        getMortys(res, mysql, context, complete);
+        getData.getMortys(res, mysql, context, complete);
         function complete(){
             // Increase callbackCount everytime function was called
             // Render page after everything was completed
@@ -265,14 +84,14 @@ module.exports = function(){
         var context = {};
         context.jsscripts = ["deleteRick.js"];
         var mysql = req.app.get('mysql');
-        getRicks(res, mysql, context, complete);
-        getMortys(res, mysql, context, complete);
-        getUniverse(res, mysql, context, complete);
-        getType(res, mysql, context, complete);
-        getRicksMortys(res, mysql, context, complete);
-        getNextMaxID(res, mysql, context, complete);
-        getAttackType(res, mysql, context, complete);
-        getMortyMaxID(res, mysql, context, complete);
+        getData.getRicks(res, mysql, context, complete);
+        getData.getMortys(res, mysql, context, complete);
+        getData.getUniverse(res, mysql, context, complete);
+        getData.getType(res, mysql, context, complete);
+        getData.getRicksMortys(res, mysql, context, complete);
+        getData.getNextMaxID(res, mysql, context, complete);
+        getData.getAttackType(res, mysql, context, complete);
+        getData.getMortyMaxID(res, mysql, context, complete);
         function complete(){
             // Increase callbackCount everytime function was called
             // Render page after everything was completed
@@ -403,10 +222,10 @@ module.exports = function(){
         callbackCount = 0;
         var context = {};
         var mysql = req.app.get('mysql');
-        getOneRick(res, mysql, context, req.params.id, complete);
-        getUniverse(res, mysql, context, complete);
-        getType(res, mysql, context, complete);
-        getMortys(res, mysql, context, complete);
+        getData.getOneRick(res, mysql, context, req.params.id, complete);
+        getData.getUniverse(res, mysql, context, complete);
+        getData.getType(res, mysql, context, complete);
+        getData.getMortys(res, mysql, context, complete);
         function complete(){
             callbackCount++;
             if(callbackCount >= 4){
@@ -416,45 +235,6 @@ module.exports = function(){
         }
     });
 
-
-    // Delete a rick and morty connection
-    function deleteConnections(res, mysql, morty_id, rick_id, complete){
-        var sql = "DELETE FROM rick_mortys WHERE rick_mortys.m_id = ? AND rick_mortys.r_id = ?";
-        var inserts = [morty_id, rick_id];
-        mysql.pool.query(sql, inserts, function(error, results, fields){
-            if(error){
-                res.write(JSON.stringify(error));
-                res.end();
-            }
-            complete();
-        });
-    }
-
-    // Add a rick and morty connection
-    function addConnections (res, mysql, morty_id, rick_id, complete){
-        var sql = "INSERT INTO rick_mortys (r_id, m_id) VALUES (?, ?)";
-        var inserts = [rick_id, morty_id];
-        mysql.pool.query(sql, inserts, function(error, results, fields){
-            if(error){
-                res.write(JSON.stringify(error));
-                res.end();
-            }
-            complete();
-        });
-    }
-
-    // Update Rick's attributes
-    function updateRick (res, mysql, fname, level, type, dimension, rickID, complete) {
-        var sql = "UPDATE rick SET fName=?, level=?, type=?, dimension=? WHERE rick_id=?";
-        let inserts = [fname, level, type, dimension, rickID];
-        mysql.pool.query(sql, inserts, function(error, results, fields){
-            if(error){
-                res.write(JSON.stringify(error));
-                res.end();
-            }
-            complete();
-        });
-    }
 
     // Update Rick accordingly
     // Validate which Morty is being added or removed 
@@ -479,14 +259,14 @@ module.exports = function(){
         // User selected to remove all mortys
         if (newMortyCount == 0 && prevMortyCount != 0) {
             for (let i = 0; i < prevMortyCount; i++){
-                deleteConnections(res, mysql, req.body.prevMorty[i], req.body.rickID, complete);
+                getData.deleteConnections(res, mysql, req.body.prevMorty[i], req.body.rickID, complete);
                 totalCalls += 1; 
             }
         }
         // User added morty's to a rick that had no mortys
         else if (prevMortyCount == 0 && newMortyCount >= 0) {
             for (let i = 0; i < newMortyCount; i++){
-                addConnections (res, mysql, req.body.newMorty[i], req.body.rickID, complete);
+                getData.addConnections (res, mysql, req.body.newMorty[i], req.body.rickID, complete);
                 totalCalls += 1; 
             }
         }
@@ -512,7 +292,7 @@ module.exports = function(){
 
                 // If previous morty was not included in the updated Rick then delete that morty
                 if (!prevMortyFound) {
-                    deleteConnections(res, mysql, req.body.prevMorty[i], req.body.rickID, complete);
+                    getData.deleteConnections(res, mysql, req.body.prevMorty[i], req.body.rickID, complete);
                     totalCalls += 1;
                 }
             }
@@ -520,7 +300,7 @@ module.exports = function(){
             // Check which morty to add from the current update
             for (i = 0; i < newMortyCount; i++) {
                 if (addMorty[i]) {
-                    addConnections (res, mysql, req.body.newMorty[i], req.body.rickID, complete);
+                    getData.addConnections (res, mysql, req.body.newMorty[i], req.body.rickID, complete);
                     totalCalls += 1;
                 }
             }    
@@ -547,7 +327,7 @@ module.exports = function(){
 
                 // If previous morty was not included in the updated Rick then delete that morty
                 if (!newMortyFound) {
-                    addConnections (res, mysql, req.body.newMorty[i], req.body.rickID, complete);
+                    getData.addConnections (res, mysql, req.body.newMorty[i], req.body.rickID, complete);
                     totalCalls += 1; 
                 }
             }
@@ -555,7 +335,7 @@ module.exports = function(){
             // Check which morty to add from the current update
             for (i = 0; i < prevMortyCount; i++) {
                 if (deleteMorty[i]) {
-                    deleteConnections(res, mysql, req.body.prevMorty[i], req.body.rickID, complete);
+                    getData.deleteConnections(res, mysql, req.body.prevMorty[i], req.body.rickID, complete);
                     totalCalls += 1; 
                 }
             }    
@@ -563,7 +343,7 @@ module.exports = function(){
         }
         
         // Update the standard information for a Rick
-        updateRick(res, mysql, req.body.fname, req.body.level, req.body.type, req.body.dimension, req.body.rickID, complete);
+        getData.updateRick(res, mysql, req.body.fname, req.body.level, req.body.type, req.body.dimension, req.body.rickID, complete);
         totalCalls += 1; 
 
         console.log("total: " + totalCalls);
@@ -588,10 +368,10 @@ module.exports = function(){
         var context = {};
         context.jsscripts = ["deleteRick.js"];
         var mysql = req.app.get('mysql');
-        getMortys(res, mysql, context, complete);
-        getRicksMortys(res, mysql, context, complete);
-        getAttackType(res, mysql, context, complete);
-        getMortyMaxID(res, mysql, context, complete);
+        getData.getMortys(res, mysql, context, complete);
+        getData.getRicksMortys(res, mysql, context, complete);
+        getData.getAttackType(res, mysql, context, complete);
+        getData.getMortyMaxID(res, mysql, context, complete);
         function complete(){
             // Increase callbackCount everytime function was called
             // Render page after everything was completed
@@ -677,8 +457,8 @@ module.exports = function(){
         callbackCount = 0;
         var context = {};
         var mysql = req.app.get('mysql');
-        getOneMorty(res, mysql, context, req.params.id, complete);
-        getAttackType(res, mysql, context, complete);
+        getData.getOneMorty(res, mysql, context, req.params.id, complete);
+        getData.getAttackType(res, mysql, context, complete);
         function complete(){
             callbackCount++;
             if(callbackCount >= 2){
@@ -687,45 +467,6 @@ module.exports = function(){
             }
         }
     });
-
-    // Delete a morty and morty connection
-function deleteAttackConnections(res, mysql, attack_id, morty_id, complete){
-    var sql = "DELETE FROM morty_attacks WHERE morty_attacks.m_id = ? AND morty_attacks.a_id = ?";
-    var inserts = [morty_id, attack_id];
-    mysql.pool.query(sql, inserts, function(error, results, fields){
-        if(error){
-            res.write(JSON.stringify(error));
-            res.end();
-        }
-        complete();
-    });
-}
-
-// Add a morty and attack connection
-function addAttackConnection (res, mysql, attack_id, morty_id, complete){
-    var sql = "INSERT INTO morty_attacks (a_id, m_id) VALUES (?, ?)";
-    var inserts = [attack_id, morty_id];
-    mysql.pool.query(sql, inserts, function(error, results, fields){
-        if(error){
-            res.write(JSON.stringify(error));
-            res.end();
-        }
-        complete();
-    });
-}
-
-// Update Morty's attributes
-function updateMorty (res, mysql, fname, level, health, defense, mortyID, complete) {
-    var sql = "UPDATE morty SET fName=?, level=?, health=?, defense=? WHERE morty_id=?";
-    let inserts = [fname, level, health, defense, mortyID];
-    mysql.pool.query(sql, inserts, function(error, results, fields){
-        if(error){
-            res.write(JSON.stringify(error));
-            res.end();
-        }
-        complete();
-    });
-}
 
 // Update Morty accordingly
 // Validate which Attack is being added or removed 
@@ -750,14 +491,14 @@ router.post('/updateMorty',function(req,res){
     // User selected to remove all attacks
     if (newAttackCount == 0 && prevAttackCount != 0) {
         for (let i = 0; i < prevAttackCount; i++){
-            deleteAttackConnections(res, mysql, req.body.prevAttack[i], req.body.mortyID, complete);
+            getData.deleteAttackConnections(res, mysql, req.body.prevAttack[i], req.body.mortyID, complete);
             totalCalls += 1; 
         }
     }
     // User added attacks's to a morty that had no attacks
     else if (prevAttackCount == 0 && newAttackCount >= 0) {
         for (let i = 0; i < newAttackCount; i++){
-            addAttackConnection (res, mysql, req.body.newAttack[i], req.body.mortyID, complete);
+            getData.addAttackConnection (res, mysql, req.body.newAttack[i], req.body.mortyID, complete);
             totalCalls += 1; 
         }
     }
@@ -783,7 +524,7 @@ router.post('/updateMorty',function(req,res){
 
             // If previous attack was not included in the updated Morty then delete that attack
             if (!prevAttackFound) {
-                deleteAttackConnections(res, mysql, req.body.prevAttack[i], req.body.mortyID, complete);
+                getData.deleteAttackConnections(res, mysql, req.body.prevAttack[i], req.body.mortyID, complete);
                 totalCalls += 1;
             }
         }
@@ -791,7 +532,7 @@ router.post('/updateMorty',function(req,res){
         // Check which attack to add from the current update
         for (i = 0; i < newAttackCount; i++) {
             if (addAttack[i]) {
-                addAttackConnection (res, mysql, req.body.newAttack[i], req.body.mortyID, complete);
+                getData.addAttackConnection (res, mysql, req.body.newAttack[i], req.body.mortyID, complete);
                 totalCalls += 1;
             }
         }    
@@ -818,7 +559,7 @@ router.post('/updateMorty',function(req,res){
 
             // If previous attack was not included in the updated Morty then delete that attack
             if (!newAttackFound) {
-                addAttackConnection (res, mysql, req.body.newAttack[i], req.body.mortyID, complete);
+                getData.addAttackConnection (res, mysql, req.body.newAttack[i], req.body.mortyID, complete);
                 totalCalls += 1; 
             }
         }
@@ -826,7 +567,7 @@ router.post('/updateMorty',function(req,res){
         // Check which attack to add from the current update
         for (i = 0; i < prevAttackCount; i++) {
             if (deleteAttack[i]) {
-                deleteAttackConnections(res, mysql, req.body.prevAttack[i], req.body.mortyID, complete);
+                getData.deleteAttackConnections(res, mysql, req.body.prevAttack[i], req.body.mortyID, complete);
                 totalCalls += 1; 
             }
         }    
@@ -834,7 +575,7 @@ router.post('/updateMorty',function(req,res){
     }
     
     // Update the standard information for a Morty
-    updateMorty(res, mysql, req.body.fname, req.body.level, req.body.health, req.body.defense, req.body.mortyID, complete);
+    getData.updateMorty(res, mysql, req.body.fname, req.body.level, req.body.health, req.body.defense, req.body.mortyID, complete);
     totalCalls += 1; 
 
     console.log("total: " + totalCalls);
@@ -858,7 +599,7 @@ router.post('/updateMorty',function(req,res){
         var callbackCount = 0;
         var context = {};
         var mysql = req.app.get('mysql');
-        getUniverse(res, mysql, context, complete);
+        getData.getUniverse(res, mysql, context, complete);
 
         function complete(){
             callbackCount++; 
@@ -913,7 +654,7 @@ router.post('/updateMorty',function(req,res){
         callbackCount = 0;
         var context = {};
         var mysql = req.app.get('mysql');
-        getOneUniverse(res, mysql, context, req.params.id, complete);
+        getData.getOneUniverse(res, mysql, context, req.params.id, complete);
         function complete(){
             callbackCount++;
             if(callbackCount >= 1){
@@ -924,24 +665,11 @@ router.post('/updateMorty',function(req,res){
     });
 
     // Update universe's attributes
-    function updateUniverse (res, mysql, name, populaton, species, u_id, complete) {
-        var sql = "UPDATE universe SET name=?, population=?, species=? WHERE universe_id=?";
-        let inserts = [name, populaton, species, u_id];
-        mysql.pool.query(sql, inserts, function(error, results, fields){
-            if(error){
-                res.write(JSON.stringify(error));
-                res.end();
-            }
-            complete();
-        });
-    }
-
-    // Update universe's attributes
     router.post('/updateThisUniverse', function(req, res){
         var mysql = req.app.get('mysql');
         let callbackCount = 0;
 
-        updateUniverse(res, mysql, req.body.name, req.body.population, req.body.species, req.body.id, complete);
+        getData.updateUniverse(res, mysql, req.body.name, req.body.population, req.body.species, req.body.id, complete);
 
         function complete(){
             callbackCount++;
@@ -958,7 +686,7 @@ router.post('/updateMorty',function(req,res){
         var callbackCount = 0;
         var context = {};
         var mysql = req.app.get('mysql');
-        getAttackType(res, mysql, context, complete);
+        getData.getAttackType(res, mysql, context, complete);
 
         function complete(){
             callbackCount++; 
@@ -1020,7 +748,7 @@ router.post('/updateMorty',function(req,res){
         callbackCount = 0;
         var context = {};
         var mysql = req.app.get('mysql');
-        getOneAbility(res, mysql, context, req.params.id, complete);
+        getData.getOneAbility(res, mysql, context, req.params.id, complete);
         function complete(){
             callbackCount++;
             if(callbackCount >= 1){
@@ -1030,24 +758,11 @@ router.post('/updateMorty',function(req,res){
         }
     });
 
-    // Update Attacks's attributes
-    function updateAbility (res, mysql, name, power, a_id,  complete) {
-        var sql = "UPDATE attack_type SET ability=?, power=? WHERE attack_id=?";
-        let inserts = [name, power, a_id];
-        mysql.pool.query(sql, inserts, function(error, results, fields){
-            if(error){
-                res.write(JSON.stringify(error));
-                res.end();
-            }
-            complete();
-        });
-    }
-    
     router.post('/updateThisAbility', function(req, res){
         var mysql = req.app.get('mysql');
         let callbackCount = 0;
 
-        updateAbility(res, mysql, req.body.ability, req.body.power, req.body.id, complete);
+        getData.updateAbility(res, mysql, req.body.ability, req.body.power, req.body.id, complete);
 
         function complete(){
             callbackCount++;
